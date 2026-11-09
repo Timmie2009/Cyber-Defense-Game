@@ -1,0 +1,13 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Cyber_Defense_Game.Views.MenuView">
+    <StackPanel Orientation="Horizontal" Spacing="40"
+                HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Button Content="HOST" Width="160" Height="60" FontSize="20"
+                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                Click="Host_Click" />
+        <Button Content="JOIN" Width="160" Height="60" FontSize="20"
+                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                Click="Join_Click" />
+    </StackPanel>
+</UserControl>

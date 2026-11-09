@@ -1,0 +1,17 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Cyber_Defense_Game.Views.JoinView">
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
+        <TextBlock Text="Join screen" FontSize="24" HorizontalAlignment="Center" />
+
+        <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center">
+            <Button Content="Image 1" Width="120" Height="50" Click="Image1_Click" />
+            <Button Content="Image 2" Width="120" Height="50" Click="Image2_Click" />
+            <Button Content="Image 3" Width="120" Height="50" Click="Image3_Click" />
+        </StackPanel>
+
+        <TextBlock x:Name="StatusText" HorizontalAlignment="Center" />
+
+        <Button Content="Back" HorizontalAlignment="Center" Click="Back_Click" />
+    </StackPanel>
+</UserControl>

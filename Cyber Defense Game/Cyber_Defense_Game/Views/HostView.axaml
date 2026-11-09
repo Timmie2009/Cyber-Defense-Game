@@ -1,0 +1,12 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Cyber_Defense_Game.Views.HostView">
+    <DockPanel Margin="20">
+        <StackPanel DockPanel.Dock="Top" Spacing="10" Margin="0,0,0,20">
+            <TextBlock Text="Host screen" FontSize="24" HorizontalAlignment="Center" />
+            <Button Content="Back" HorizontalAlignment="Center" Click="Back_Click" />
+        </StackPanel>
+
+        <Image x:Name="DisplayImage" Stretch="Uniform" />
+    </DockPanel>
+</UserControl>

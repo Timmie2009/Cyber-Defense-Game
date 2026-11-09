@@ -1,0 +1,11 @@
+<Solution>
+  <Project Path="Cyber Defense Game/Cyber_Defense_Game.Android/Cyber_Defense_Game.Android.csproj">
+    <Deploy />
+  </Project>
+  <Project Path="Cyber Defense Game/Cyber_Defense_Game.Browser/Cyber_Defense_Game.Browser.csproj" />
+  <Project Path="Cyber Defense Game/Cyber_Defense_Game.Desktop/Cyber_Defense_Game.Desktop.csproj" />
+  <Project Path="Cyber Defense Game/Cyber_Defense_Game.iOS/Cyber_Defense_Game.iOS.csproj">
+    <Deploy />
+  </Project>
+  <Project Path="Cyber Defense Game/Cyber_Defense_Game/Cyber_Defense_Game.csproj" />
+</Solution>
