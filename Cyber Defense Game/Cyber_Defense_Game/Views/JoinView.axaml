@@ -1,3 +1,4 @@
+
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Cyber_Defense_Game.Views.JoinView">
@@ -11,6 +12,14 @@
         </StackPanel>
 
         <TextBlock x:Name="StatusText" HorizontalAlignment="Center" />
+
+        <TextBlock Text="Name:" FontSize="12" HorizontalAlignment="Center">
+            <TextBlock.RenderTransform>
+                <TranslateTransform Y="12" />
+            </TextBlock.RenderTransform>
+        </TextBlock>
+
+        <TextBox x:Name="Name" HorizontalAlignment="Center" />
 
         <Button Content="Back" HorizontalAlignment="Center" Click="Back_Click" />
     </StackPanel>

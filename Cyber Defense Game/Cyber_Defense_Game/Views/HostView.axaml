@@ -7,6 +7,20 @@
             <Button Content="Back" HorizontalAlignment="Center" Click="Back_Click" />
         </StackPanel>
 
-        <Image x:Name="DisplayImage" Stretch="Uniform" />
+        <StackPanel HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="10">
+
+            <Image x:Name="DisplayImage"
+                   Stretch="Uniform"
+                   MaxHeight="500"
+                   MaxWidth="700"
+                   HorizontalAlignment="Center" />
+
+            <TextBlock x:Name="Name"
+                     Text=""
+                     HorizontalAlignment="Center" />
+
+        </StackPanel>
     </DockPanel>
 </UserControl>
