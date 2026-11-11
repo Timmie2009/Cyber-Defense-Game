@@ -14,28 +14,6 @@ public partial class HostView : UserControl
     {
         InitializeComponent();
         LoadImage();
-
-        GameState.ImageChanged += OnImageChanged;
-    }
-
-    private void OnImageChanged()
-    {
-        Avalonia.Threading.Dispatcher.UIThread.Post(LoadImage);
-    }
-
-    protected override void OnDetachedFromVisualTree(
-        Avalonia.VisualTreeAttachmentEventArgs e)
-    {
-        GameState.ImageChanged -= OnImageChanged;
-        base.OnDetachedFromVisualTree(e);
-    }
-
-    protected override void OnAttachedToVisualTree(
-        Avalonia.VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        GameState.ImageChanged -= OnImageChanged;
-        GameState.ImageChanged += OnImageChanged;
     }
 
     public HostView(MainView main) : this() => _main = main;

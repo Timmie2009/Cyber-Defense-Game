@@ -14,19 +14,10 @@ public partial class JoinView : UserControl
     private void Image2_Click(object? sender, RoutedEventArgs e) => Select(2);
     private void Image3_Click(object? sender, RoutedEventArgs e) => Select(3);
 
-    private async void Select(int index)
+    private void Select(int index)
     {
-        try
-        {
-            await GameConnection.ChangeImageAsync(index);
-
-            StatusText.Text = $"Image {index} sent to server!";
-        }
-        catch (System.Exception ex)
-        {
-            StatusText.Text = $"Connection failed: {ex.Message}";
-            System.Console.WriteLine(ex.ToString());
-        }
+        GameState.SelectedImage = index;
+        StatusText.Text = $"Host image set to {index}";
     }
 
     private void Back_Click(object? sender, RoutedEventArgs e) => _main?.ShowMenu();
