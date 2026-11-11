@@ -22,9 +22,17 @@ public partial class JoinView : UserControl
         StatusText.Text = $"Host image set to {index}";
     }
 
+<<<<<<< Updated upstream
     private void OnNameTextChanged(object? sender, TextChangedEventArgs e)
     {
         if (sender is TextBox textBox)
+=======
+            StatusText.Text = index == 2
+                ? "🚨 ALERT: Björn heeft de frikandel gestolen! 🌭"
+                : $"Image {index} sent to server!";
+        }
+        catch (System.Exception ex)
+>>>>>>> Stashed changes
         {
             GameState.PlayerName = textBox.Text;
         }
