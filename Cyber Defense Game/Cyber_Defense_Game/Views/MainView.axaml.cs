@@ -21,8 +21,7 @@ public partial class MainView : UserControl
 
         try
         {
-            await GameConnection.ConnectAsync(
-                "https://localhost:7115");
+            await GameConnection.ConnectAsync("http://145.93.116.9/");
         }
         catch (Exception ex)
         {
