@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 
 namespace Cyber_Defense_Game.Views;
 
@@ -29,5 +30,12 @@ public partial class JoinView : UserControl
         }
     }
 
+    //private void OnTextBoxGotFocus(object? sender, GotFocusEventArgs e)
+    //{
+    //    if (sender is TextBox textBox)
+    //    {
+    //        textBox.SelectAll();
+    //    }
+    //}
     private void Back_Click(object? sender, RoutedEventArgs e) => _main?.ShowMenu();
 }
