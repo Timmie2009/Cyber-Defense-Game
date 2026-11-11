@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
@@ -16,6 +17,21 @@ public partial class HostView : UserControl
         LoadImage();
 
         GameState.ImageChanged += OnImageChanged;
+
+        _ = ConnectToServerAsync();
+    }
+
+    private static async Task ConnectToServerAsync()
+    {
+        try
+        {
+            await GameConnection.ConnectAsync("https://cyberquiz.tail9822f1.ts.net");
+            Console.WriteLine("SignalR connected");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"SignalR failed: {ex}");
+        }
     }
 
     private void OnImageChanged()

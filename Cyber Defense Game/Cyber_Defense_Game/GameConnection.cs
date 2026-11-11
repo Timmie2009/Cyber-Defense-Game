@@ -1,6 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
+using System.Threading.Tasks;
 
 namespace Cyber_Defense_Game;
 
@@ -14,7 +14,10 @@ public static class GameConnection
             return;
 
         _connection = new HubConnectionBuilder()
-            .WithUrl($"{serverUrl.TrimEnd('/')}/gamehub")
+            .WithUrl($"{serverUrl.TrimEnd('/')}/gamehub", options =>
+            {
+                options.Transports = HttpTransportType.WebSockets;
+            })
             .WithAutomaticReconnect()
             .Build();
 
@@ -28,9 +31,8 @@ public static class GameConnection
 
     public static async Task ChangeImageAsync(int imageNumber)
     {
-        if (_connection?.State != HubConnectionState.Connected)
-            throw new InvalidOperationException(
-                "Geen verbinding met de gameserver.");
+        if (_connection == null)
+            return;
 
         await _connection.InvokeAsync("ChangeImage", imageNumber);
     }

@@ -5,14 +5,18 @@ var builder = WebApplication.CreateBuilder(args);
 // SignalR inschakelen
 builder.Services.AddSignalR();
 
-// Browser toegang toestaan tijdens lokaal testen
+// Browser toegang toestaan (localhost + Tailscale)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("GameClient", policy =>
     {
         policy.SetIsOriginAllowed(origin =>
-                new Uri(origin).Host == "localhost" ||
-                new Uri(origin).Host == "127.0.0.1")
+        {
+            var host = new Uri(origin).Host;
+            return host == "localhost" ||
+                   host == "127.0.0.1" ||
+                   host.EndsWith(".ts.net");
+        })
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
