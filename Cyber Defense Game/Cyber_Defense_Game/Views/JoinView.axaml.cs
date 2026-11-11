@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 
 namespace Cyber_Defense_Game.Views;
 
@@ -14,11 +15,33 @@ public partial class JoinView : UserControl
     private void Image2_Click(object? sender, RoutedEventArgs e) => Select(2);
     private void Image3_Click(object? sender, RoutedEventArgs e) => Select(3);
 
-    private void Select(int index)
+    private async void Select(int index)
     {
-        GameState.SelectedImage = index;
-        StatusText.Text = $"Host image set to {index}";
+        try
+        {
+            await GameConnection.ChangeImageAsync(index);
+
+<<<<<<< HEAD
+            StatusText.Text = index == 2
+                ? "🚨 ALERT: Björn heeft de frikandel gestolen! 🌭"
+                : $"Image {index} sent to server!";
+=======
+            StatusText.Text = $"Image {index} sent to server!";
+>>>>>>> parent of fa8cdfe (Revert "Hasan patch 0.1")
+        }
+        catch (System.Exception ex)
+        {
+            StatusText.Text = $"Connection failed: {ex.Message}";
+            System.Console.WriteLine(ex.ToString());
+        }
     }
 
+    //private void OnTextBoxGotFocus(object? sender, GotFocusEventArgs e)
+    //{
+    //    if (sender is TextBox textBox)
+    //    {
+    //        textBox.SelectAll();
+    //    }
+    //}
     private void Back_Click(object? sender, RoutedEventArgs e) => _main?.ShowMenu();
 }

@@ -8,4 +8,5 @@
     <Deploy />
   </Project>
   <Project Path="Cyber Defense Game/Cyber_Defense_Game/Cyber_Defense_Game.csproj" />
+  <Project Path="Cyber_Defense_Game.Server/Cyber_Defense_Game.Server.csproj" Id="d8b6b56e-1d05-440e-824a-4524926d1dca" />
 </Solution>
