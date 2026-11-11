@@ -1,0 +1,53 @@
+name: Build en Deploy Cyber Defense Quiz
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # Bouwt razendsnel op de cloudservers van GitHub
+
+    steps:
+      - name: 1. Haal de broncode op
+        uses: actions/checkout@v4
+
+      - name: 2. Installeer .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: 3. Installeer WebAssembly tools (wasm-tools)
+        run: dotnet workload install wasm-tools
+
+      - name: 4. Publiceer de Avalonia Browser applicatie
+        run: dotnet publish "Cyber Defense Game/Cyber_Defense_Game.Browser/Cyber_Defense_Game.Browser.csproj" -c Release -o ./publish
+
+      - name: 5. Sla de gebouwde website op voor de Raspberry Pi
+        uses: actions/upload-artifact@v4
+        with:
+          name: avalonia-wwwroot
+          path: ./publish/wwwroot
+
+  deploy:
+    needs: build            # Wacht tot het bouwen 100% gelukt is
+    runs-on: self-hosted    # Draait direct op jullie Raspberry Pi!
+
+    steps:
+      - name: 1. Download de nieuwe websitebestanden
+        uses: actions/download-artifact@v4
+        with:
+          name: avalonia-wwwroot
+          path: /root/game/wwwroot-temp
+
+      - name: 2. Vervang de oude website en zet rechten goed
+        run: |
+          mkdir -p /root/game/wwwroot
+          rm -rf /root/game/wwwroot/*
+          cp -r /root/game/wwwroot-temp/* /root/game/wwwroot/
+          rm -rf /root/game/wwwroot-temp
+          chmod -R 755 /root/game/wwwroot
+
+      - name: 3. Herstart de Nginx webserver
+        run: docker restart avalonia_website
