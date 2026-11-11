@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 
@@ -21,12 +22,13 @@ public partial class JoinView : UserControl
         StatusText.Text = $"Host image set to {index}";
     }
 
-    //private void OnTextBoxGotFocus(object? sender, GotFocusEventArgs e)
-    //{
-    //    if (sender is TextBox textBox)
-    //    {
-    //        textBox.SelectAll();
-    //    }
-    //}
+    private void OnNameTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (sender is TextBox textBox)
+        {
+            GameState.PlayerName = textBox.Text;
+        }
+    }
+
     private void Back_Click(object? sender, RoutedEventArgs e) => _main?.ShowMenu();
 }

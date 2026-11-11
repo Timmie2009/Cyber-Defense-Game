@@ -3,6 +3,7 @@
 public static class GameState
 {
     // Which image the host screen shows (1, 2 or 3)
+    public static string PlayerName { get; set; } = "";
     public static int SelectedImage { get; set; } = 1;
 
     public static string GetImagePath(int index) => index switch

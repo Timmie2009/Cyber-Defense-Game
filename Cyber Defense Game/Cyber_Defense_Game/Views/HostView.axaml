@@ -17,8 +17,8 @@
                    MaxWidth="700"
                    HorizontalAlignment="Center" />
 
-            <TextBlock x:Name="Name"
-                     Text=""
+            <TextBlock x:Name="NameDisplay"
+                     Text="Test"
                      HorizontalAlignment="Center" />
 
         </StackPanel>
