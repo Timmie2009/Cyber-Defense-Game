@@ -1,4 +1,3 @@
-﻿@ -0,0 +1,37 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
