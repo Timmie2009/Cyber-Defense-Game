@@ -19,7 +19,9 @@
             </TextBlock.RenderTransform>
         </TextBlock>
 
-        <TextBox x:Name="Name" HorizontalAlignment="Center" />
+
+       <!-- <TextBox x:Name="Name" GotFocus="OnTextBoxGotFocus" HorizontalAlignment="Center" /> -->
+
 
         <Button Content="Back" HorizontalAlignment="Center" Click="Back_Click" />
     </StackPanel>
