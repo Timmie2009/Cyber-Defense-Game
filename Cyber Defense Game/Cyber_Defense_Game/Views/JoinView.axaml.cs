@@ -21,7 +21,9 @@ public partial class JoinView : UserControl
         {
             await GameConnection.ChangeImageAsync(index);
 
-            StatusText.Text = $"Image {index} sent to server!";
+            StatusText.Text = index == 2
+                ? "🚨 ALERT: Björn heeft de frikandel gestolen! 🌭"
+                : $"Image {index} sent to server!";
         }
         catch (System.Exception ex)
         {
