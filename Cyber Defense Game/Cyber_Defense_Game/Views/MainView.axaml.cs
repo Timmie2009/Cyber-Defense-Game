@@ -21,7 +21,12 @@ public partial class MainView : UserControl
 
         try
         {
+<<<<<<< HEAD
             await GameConnection.ConnectAsync("http://145.93.116.9/");
+=======
+            await GameConnection.ConnectAsync(
+                "https://localhost:7115");
+>>>>>>> parent of fa8cdfe (Revert "Hasan patch 0.1")
         }
         catch (Exception ex)
         {

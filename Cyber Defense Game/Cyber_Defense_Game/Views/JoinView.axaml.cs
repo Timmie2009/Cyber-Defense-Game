@@ -21,9 +21,13 @@ public partial class JoinView : UserControl
         {
             await GameConnection.ChangeImageAsync(index);
 
+<<<<<<< HEAD
             StatusText.Text = index == 2
                 ? "🚨 ALERT: Björn heeft de frikandel gestolen! 🌭"
                 : $"Image {index} sent to server!";
+=======
+            StatusText.Text = $"Image {index} sent to server!";
+>>>>>>> parent of fa8cdfe (Revert "Hasan patch 0.1")
         }
         catch (System.Exception ex)
         {
