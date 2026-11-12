@@ -32,6 +32,6 @@ app.MapGet("/", () => "Cyber Defense Server werkt!");
 
 app.MapHub<GameHub>("/gamehub");
 
-app.Urls.Add("http://0.0.0.0:5000")
+app.Urls.Add("http://0.0.0.0:5000");
 
 app.Run();

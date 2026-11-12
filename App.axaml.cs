@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Cyber_Defense_Game.ViewModels;
@@ -17,7 +16,7 @@ public partial class App : Application
 #endif
     }
 
-    public override async void OnFrameworkInitializationCompleted()
+    public override void OnFrameworkInitializationCompleted()
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -39,14 +38,5 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
-
-        try
-        {
-            await GameConnection.ConnectAsync("http://145.93.116.9/:5000");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Verbinding mislukt: {ex.Message}");
-        }
     }
 }
