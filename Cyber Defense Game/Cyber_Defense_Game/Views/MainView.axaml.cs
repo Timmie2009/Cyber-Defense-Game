@@ -21,7 +21,7 @@ public partial class MainView : UserControl
 
         try
         {
-            await GameConnection.ConnectAsync("https://ts.net");
+            await GameConnection.ConnectAsync("https://cyberquiz.tail9822f1.ts.net/");
         }
         catch (Exception ex)
         {
