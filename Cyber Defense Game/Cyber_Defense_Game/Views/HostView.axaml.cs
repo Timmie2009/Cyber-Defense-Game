@@ -15,9 +15,6 @@ public partial class HostView : UserControl
     {
         InitializeComponent();
         LoadImage();
-<<<<<<< Updated upstream
-        UpdatePlayerName();
-=======
 
         GameState.ImageChanged += OnImageChanged;
 
@@ -55,7 +52,6 @@ public partial class HostView : UserControl
         base.OnAttachedToVisualTree(e);
         GameState.ImageChanged -= OnImageChanged;
         GameState.ImageChanged += OnImageChanged;
->>>>>>> Stashed changes
     }
 
     public HostView(MainView main) : this() => _main = main;
@@ -68,10 +64,6 @@ public partial class HostView : UserControl
             using var stream = AssetLoader.Open(uri);
             DisplayImage.Source = new Bitmap(stream);
         }
-    }
-    public void UpdatePlayerName()
-    {
-        NameDisplay.Text = GameState.PlayerName;
     }
 
     private void Back_Click(object? sender, RoutedEventArgs e) => _main?.ShowMenu();

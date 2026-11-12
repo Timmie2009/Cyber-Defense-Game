@@ -2,6 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Cyber_Defense_Game</RootNamespace>
     <TargetFramework>net10.0-browser</TargetFramework>
+	<JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
@@ -9,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Browser" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
   </ItemGroup>
 
   <ItemGroup>

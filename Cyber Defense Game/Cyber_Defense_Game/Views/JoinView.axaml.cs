@@ -16,10 +16,21 @@ public partial class JoinView : UserControl
     private void Image2_Click(object? sender, RoutedEventArgs e) => Select(2);
     private void Image3_Click(object? sender, RoutedEventArgs e) => Select(3);
 
-    private void Select(int index)
+    private async void Select(int index)
     {
-        GameState.SelectedImage = index;
-        StatusText.Text = $"Host image set to {index}";
+        try
+        {
+            await GameConnection.ChangeImageAsync(index);
+
+            StatusText.Text = index == 2
+                ? "🚨 ALERT: Björn heeft de frikandel gestolen! 🌭"
+                : $"Image {index} sent to server!";
+        }
+        catch (System.Exception ex)
+        {
+            StatusText.Text = $"Connection failed: {ex.Message}";
+            System.Console.WriteLine(ex.ToString());
+        }
     }
 
 <<<<<<< Updated upstream
