@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using Avalonia.Controls;
 
 namespace Cyber_Defense_Game.Views;
@@ -22,7 +21,7 @@ public partial class MainView : UserControl
 
         try
         {
-            await GameConnection.ConnectAsync("http://145.93.116.9/");
+            await GameConnection.ConnectAsync("https://ts.net");
         }
         catch (Exception ex)
         {

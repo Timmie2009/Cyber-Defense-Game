@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
+using System;
 using System.Threading.Tasks;
 
 namespace Cyber_Defense_Game;
@@ -13,13 +14,23 @@ public static class GameConnection
         if (_connection != null)
             return;
 
-        _connection = new HubConnectionBuilder()
-            .WithUrl($"{serverUrl.TrimEnd('/')}/gamehub", options =>
-            {
-                options.Transports = HttpTransportType.WebSockets;
-            })
-            .WithAutomaticReconnect()
-            .Build();
+        serverUrl = serverUrl.Trim().TrimEnd('/');
+
+        if (!serverUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            serverUrl = "https://" + serverUrl;
+
+        if (serverUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+            serverUrl = "https://" + serverUrl.Substring("http://".Length);
+
+        var connection = new HubConnectionBuilder()
+
+    .WithUrl("https://ts.net")
+
+    .WithAutomaticReconnect()
+
+    .Build();
+
+
 
         _connection.On<int>("ImageChanged", imageNumber =>
         {
