@@ -1,47 +1,63 @@
-﻿using Microsoft.AspNetCore.Http.Connections;
-using Microsoft.AspNetCore.SignalR.Client;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Cyber_Defense_Game;
 
 public static class GameConnection
 {
+    public const string DefaultServerUrl = "https://cyberquiz.tail9822f1.ts.net";
+
     private static HubConnection? _connection;
+    private static Task? _connecting;
 
-    public static async Task ConnectAsync(string serverUrl)
+    public static Task ConnectAsync(string? serverUrl = null)
     {
-        if (_connection != null)
-            return;
+        if (_connection?.State == HubConnectionState.Connected)
+            return Task.CompletedTask;
 
-        serverUrl = serverUrl.Trim().TrimEnd('/');
+        return _connecting ??= StartAsync(serverUrl ?? DefaultServerUrl);
+    }
 
-        if (!serverUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            serverUrl = "https://" + serverUrl;
-
-        if (serverUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
-            serverUrl = "https://" + serverUrl.Substring("http://".Length);
-
-        var connection = new HubConnectionBuilder()
-
-    .WithUrl("https://ts.net")
-
-    .WithAutomaticReconnect()
-
-    .Build();
-
-
-
-        _connection.On<int>("ImageChanged", imageNumber =>
+    private static async Task StartAsync(string serverUrl)
+    {
+        try
         {
-            GameState.SelectedImage = imageNumber;
-        });
+            serverUrl = serverUrl.Trim().TrimEnd('/');
 
-        await _connection.StartAsync();
+            if (serverUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+                serverUrl = "https://" + serverUrl.Substring("http://".Length);
+            else if (!serverUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                serverUrl = "https://" + serverUrl;
+
+            var connection = new HubConnectionBuilder()
+                .WithUrl($"{serverUrl}/gamehub", options =>
+                {
+                    options.Transports = HttpTransportType.WebSockets;
+                })
+                .WithAutomaticReconnect()
+                .Build();
+
+            connection.On<int>("ImageChanged", imageNumber =>
+            {
+                GameState.SelectedImage = imageNumber;
+            });
+
+            await connection.StartAsync();
+
+            _connection = connection;   // only stored after a successful start
+        }
+        finally
+        {
+            _connecting = null;         // allows a retry if it failed
+        }
     }
 
     public static async Task ChangeImageAsync(int imageNumber)
     {
+        await ConnectAsync();           // connects first if needed
+
         if (_connection == null)
             return;
 
