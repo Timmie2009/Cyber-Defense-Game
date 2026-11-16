@@ -13,7 +13,9 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
     <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" />
   </ItemGroup>
-
+  <PropertyGroup>
+    <UseSystemResourceKeys>false</UseSystemResourceKeys>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Cyber_Defense_Game\Cyber_Defense_Game.csproj" />
   </ItemGroup>
