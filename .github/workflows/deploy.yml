@@ -27,7 +27,7 @@ jobs:
 
       - name: 4. Installeer WebAssembly tools en project-workloads
         run: |
-          dotnet workload install wasm-tools
+          dotnet workload install wasm-tools wasm-tools-net10
           dotnet workload restore "$PROJECT"
           dotnet workload list
 
