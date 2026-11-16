@@ -7,7 +7,8 @@ on:
   workflow_dispatch:
 
 env:
-  PROJECT: "Cyber Defense Game/Cyber_Defense_Game.Browser/Cyber_Defense_Game.Browser.csproj"
+  BROWSER_PROJECT: "Cyber Defense Game/Cyber_Defense_Game.Browser/Cyber_Defense_Game.Browser.csproj"
+  SERVER_PROJECT: "Cyber Defense Game/Cyber_Defense_Game.Server/Cyber_Defense_Game.Server.csproj"
 
 jobs:
   build:
@@ -22,84 +23,68 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: 3. Toon .NET versie
-        run: dotnet --info
-
-      - name: 4. Installeer WebAssembly tools en project-workloads
+      - name: 3. Installeer WebAssembly tools en project-workloads
         run: |
           dotnet workload install wasm-tools wasm-tools-net10
-          dotnet workload restore "$PROJECT"
-          dotnet workload list
+          dotnet workload restore "$BROWSER_PROJECT"
 
-      - name: 5. Voeg SkiaSharp WebAssembly ondersteuning toe en Restore
+      - name: 4. Voeg SkiaSharp WebAssembly ondersteuning toe en Restore
         run: |
-          dotnet add "$PROJECT" package SkiaSharp.NativeAssets.WebAssembly
-          dotnet restore "$PROJECT"
+          dotnet add "$BROWSER_PROJECT" package SkiaSharp.NativeAssets.WebAssembly
+          dotnet restore "$BROWSER_PROJECT"
+          dotnet restore "$SERVER_PROJECT"
 
-      - name: 6. Toon Skia packages die gebruikt worden
-        run: dotnet list "$PROJECT" package --include-transitive | grep -i -E "skia|avalonia" || true
-
-      - name: 7. Publiceer de Avalonia Browser applicatie (native build geforceerd)
+      - name: 5. Publiceer de Avalonia Browser applicatie
         run: >
-          dotnet publish "$PROJECT"
+          dotnet publish "$BROWSER_PROJECT"
           -c Release
-          -o ./publish
+          -o ./publish-browser
           --no-restore
           -p:WasmBuildNative=true
-          -bl:./publish-log.binlog
 
-      - name: 8. Controleer of SkiaSharp native is meegebouwd
-        run: |
-          echo "=== _framework native bestanden ==="
-          ls -la ./publish/wwwroot/_framework/ | grep -i -E "native|skia" || true
+      - name: 6. Publiceer de C# Server applicatie
+        run: >
+          dotnet publish "$SERVER_PROJECT"
+          -c Release
+          -o ./publish-server
+          --no-restore
 
-          NATIVE=$(find ./publish/wwwroot/_framework -name "dotnet.native.*.wasm" | head -n 1)
-          if [ -z "$NATIVE" ]; then
-            echo "::error::Geen dotnet.native.*.wasm gevonden in de publish output"
-            exit 1
-          fi
-
-          SIZE=$(stat -c%s "$NATIVE")
-          echo "Native wasm: $NATIVE ($SIZE bytes)"
-
-          if [ "$SIZE" -lt 5000000 ]; then
-            echo "::warning::dotnet.native.wasm is klein ($SIZE bytes). libSkiaSharp is waarschijnlijk NIET meegelinkt."
-          fi
-
-          echo "=== SkiaSharp in publish output ==="
-          find ./publish -iname "*skia*" | head -n 20
-
-      - name: 9. Sla de build log op (voor diagnose)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: publish-binlog
-          path: ./publish-log.binlog
-
-      - name: 10. Sla de gebouwde website op voor de Raspberry Pi
+      - name: 7. Sla de gebouwde website op
         uses: actions/upload-artifact@v4
         with:
           name: avalonia-wwwroot
-          path: ./publish/wwwroot
+          path: ./publish-browser/wwwroot
+
+      - name: 8. Sla de gebouwde server op
+        uses: actions/upload-artifact@v4
+        with:
+          name: cyber-server
+          path: ./publish-server
 
   deploy:
     needs: build
     runs-on: self-hosted
 
     steps:
-      - name: 1. Download de nieuwe websitebestanden
+      - name: 1. Download de nieuwe website- en serverbestanden
         uses: actions/download-artifact@v4
         with:
-          name: avalonia-wwwroot
-          path: /root/game/wwwroot-temp
+          path: /root/game/deploy-temp
 
-      - name: 2. Vervang de oude website en zet rechten goed
+      - name: 2. Vervang de websitebestanden
         run: |
           mkdir -p /root/game/wwwroot
           rm -rf /root/game/wwwroot/*
-          cp -r /root/game/wwwroot-temp/* /root/game/wwwroot/
-          rm -rf /root/game/wwwroot-temp
+          cp -r /root/game/deploy-temp/avalonia-wwwroot/* /root/game/wwwroot/
           chmod -R 755 /root/game/wwwroot
 
-      - name: 3. Herstart de Nginx webserver
-        run: docker restart avalonia_website
+      - name: 3. Vervang de serverbestanden
+        run: |
+          mkdir -p /root/game/server
+          rm -rf /root/game/server/*
+          cp -r /root/game/deploy-temp/cyber-server/* /root/game/server/
+          rm -rf /root/game/deploy-temp
+          chmod -R 755 /root/game/server
+
+      - name: 4. Start of herstart alle containers op de Pi
+        run: docker compose -f /root/game/docker-compose.yml up -d --force-recreate website server
