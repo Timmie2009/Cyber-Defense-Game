@@ -20,7 +20,9 @@
         </TextBlock>
 
 
-       <!-- <TextBox x:Name="Name" GotFocus="OnTextBoxGotFocus" HorizontalAlignment="Center" /> -->
+      <TextBox x:Name="NameInput"
+         TextChanged="OnNameTextChanged"
+         HorizontalAlignment="Center" />
 
 
         <Button Content="Back" HorizontalAlignment="Center" Click="Back_Click" />
