@@ -1,26 +1,21 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Cyber_Defense_Game.Views.HostView">
+             xmlns:local="using:Cyber_Defense_Game.Views"
+             x:Class="Cyber_Defense_Game.Views.HostView"
+             x:DataType="local:HostView">
     <DockPanel Margin="20">
         <StackPanel DockPanel.Dock="Top" Spacing="10" Margin="0,0,0,20">
             <TextBlock Text="Host screen" FontSize="24" HorizontalAlignment="Center" />
             <Button Content="Back" HorizontalAlignment="Center" Click="Back_Click" />
         </StackPanel>
 
-        <StackPanel HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Spacing="10">
-
-            <Image x:Name="DisplayImage"
-                   Stretch="Uniform"
-                   MaxHeight="500"
-                   MaxWidth="700"
-                   HorizontalAlignment="Center" />
-
-            <TextBlock x:Name="NameDisplay"
-                     Text="Test"
-                     HorizontalAlignment="Center" />
-
+        <!-- Lobby: players on the left -->
+        <StackPanel DockPanel.Dock="Left" Width="200" Margin="0,0,20,0" Spacing="5">
+            <TextBlock Text="Players" FontWeight="Bold" />
+            <ListBox x:Name="PlayerList" />
         </StackPanel>
+
+        <!-- The image the host displays -->
+        <Image x:Name="DisplayImage" Stretch="Uniform" />
     </DockPanel>
 </UserControl>

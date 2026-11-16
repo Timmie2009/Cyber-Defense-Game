@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
@@ -16,16 +19,17 @@ public partial class HostView : UserControl
         InitializeComponent();
         LoadImage();
 
-        GameState.ImageChanged += OnImageChanged;
-
         _ = ConnectToServerAsync();
     }
+
+    public HostView(MainView main) : this() => _main = main;
 
     private static async Task ConnectToServerAsync()
     {
         try
         {
             await GameConnection.ConnectAsync("https://cyberquiz.tail9822f1.ts.net");
+            await GameConnection.RegisterAsHostAsync();
             Console.WriteLine("SignalR connected");
         }
         catch (Exception ex)
@@ -39,22 +43,29 @@ public partial class HostView : UserControl
         Avalonia.Threading.Dispatcher.UIThread.Post(LoadImage);
     }
 
-    protected override void OnDetachedFromVisualTree(
-        Avalonia.VisualTreeAttachmentEventArgs e)
+    private void OnPlayersUpdated(List<PlayerInfo> players)
     {
-        GameState.ImageChanged -= OnImageChanged;
-        base.OnDetachedFromVisualTree(e);
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            PlayerList.ItemsSource = players.Select(p => p.Name).ToList());
     }
 
-    protected override void OnAttachedToVisualTree(
-        Avalonia.VisualTreeAttachmentEventArgs e)
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+
         GameState.ImageChanged -= OnImageChanged;
         GameState.ImageChanged += OnImageChanged;
+
+        GameConnection.PlayersUpdated -= OnPlayersUpdated;
+        GameConnection.PlayersUpdated += OnPlayersUpdated;
     }
 
-    public HostView(MainView main) : this() => _main = main;
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        GameState.ImageChanged -= OnImageChanged;
+        GameConnection.PlayersUpdated -= OnPlayersUpdated;
+        base.OnDetachedFromVisualTree(e);
+    }
 
     private void LoadImage()
     {

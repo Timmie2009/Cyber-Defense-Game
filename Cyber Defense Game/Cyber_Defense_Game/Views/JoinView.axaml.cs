@@ -2,14 +2,20 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml.MarkupExtensions;
+using System;
+using System.Diagnostics;
 
 namespace Cyber_Defense_Game.Views;
 
 public partial class JoinView : UserControl
 {
     private readonly MainView? _main;
+    public HostView _HostView = new HostView();
 
-    public JoinView() => InitializeComponent();
+    public JoinView()
+    {        
+        InitializeComponent();
+    }
     public JoinView(MainView main) : this() => _main = main;
 
     private void Image1_Click(object? sender, RoutedEventArgs e) => Select(1);
@@ -22,9 +28,7 @@ public partial class JoinView : UserControl
         {
             await GameConnection.ChangeImageAsync(index);
 
-            StatusText.Text = index == 2
-                ? "🚨 ALERT: Björn heeft de frikandel gestolen! 🌭"
-                : $"Image {index} sent to server!";
+            StatusText.Text = index == 2 ? "🚨 ALERT: Björn heeft de frikandel gestolen! 🌭" : $"Image {index} sent to server!";
         }
         catch (System.Exception ex)
         {
@@ -34,13 +38,22 @@ public partial class JoinView : UserControl
     }
 
 
-    private void OnNameTextChanged(object? sender, TextChangedEventArgs e)
+    private void Back_Click(object? sender, RoutedEventArgs e)
     {
-        if (sender is TextBox textBox)
-        {
-            GameState.PlayerName = textBox.Text;
-        }
+        _main?.ShowMenu();
     }
 
-    private void Back_Click(object? sender, RoutedEventArgs e) => _main?.ShowMenu();
+    private async void Submit_Click(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await GameConnection.ConnectAsync("https://cyberquiz.tail9822f1.ts.net");
+            await GameConnection.JoinLobbyAsync(NameInput.Text ?? "Player");
+            StatusText.Text = "Joined the lobby!";
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"Connection failed: {ex.Message}";
+        }
+    }
 }
