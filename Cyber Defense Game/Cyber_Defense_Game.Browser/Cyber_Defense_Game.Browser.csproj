@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+﻿<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
   <PropertyGroup>
     <RootNamespace>Cyber_Defense_Game</RootNamespace>
     <TargetFramework>net10.0-browser</TargetFramework>
@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Avalonia.Browser" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
+    <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" />
   </ItemGroup>
 
   <ItemGroup>
