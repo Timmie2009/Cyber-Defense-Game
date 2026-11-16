@@ -26,7 +26,7 @@ public partial class HostView : UserControl
     {
         try
         {
-            await GameConnection.ConnectAsync("https://cyberquiz.tail9822f1.ts.net");
+            await GameConnection.ConnectAsync("https://cyberquiz.tail9822f1.ts.net/");
             await GameConnection.RegisterAsHostAsync();
             Console.WriteLine("SignalR connected");
         }
