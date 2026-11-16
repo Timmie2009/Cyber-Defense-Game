@@ -1,30 +1,28 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Cyber_Defense_Game.Views;
 
 public partial class HostView : UserControl
 {
     private readonly MainView? _main;
+    private bool _connectStarted;
 
     public HostView()
     {
         InitializeComponent();
-        LoadImage();
-
-        _ = ConnectToServerAsync();
     }
 
     public HostView(MainView main) : this() => _main = main;
 
-    private static async Task ConnectToServerAsync()
+    private async Task ConnectToServerAsync()
     {
         try
         {
@@ -58,6 +56,14 @@ public partial class HostView : UserControl
 
         GameConnection.PlayersUpdated -= OnPlayersUpdated;
         GameConnection.PlayersUpdated += OnPlayersUpdated;
+
+        LoadImage();
+
+        if (!_connectStarted)
+        {
+            _connectStarted = true;
+            _ = ConnectToServerAsync();
+        }
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -69,11 +75,18 @@ public partial class HostView : UserControl
 
     private void LoadImage()
     {
-        var uri = new Uri(GameState.GetImagePath(GameState.SelectedImage));
-        if (AssetLoader.Exists(uri))
+        try
         {
-            using var stream = AssetLoader.Open(uri);
-            DisplayImage.Source = new Bitmap(stream);
+            var uri = new Uri(GameState.GetImagePath(GameState.SelectedImage));
+            if (AssetLoader.Exists(uri))
+            {
+                using var stream = AssetLoader.Open(uri);
+                DisplayImage.Source = new Bitmap(stream);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"LoadImage failed: {ex}");
         }
     }
 
