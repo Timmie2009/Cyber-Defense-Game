@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Bouwt razendsnel op de cloudservers van GitHub
+    runs-on: ubuntu-latest
 
     steps:
       - name: 1. Haal de broncode op
@@ -21,18 +21,21 @@ jobs:
       - name: 3. Installeer WebAssembly tools (wasm-tools)
         run: dotnet workload install wasm-tools
 
-      - name: 4. Publiceer de Avalonia Browser applicatie
+      - name: 4. Voeg SkiaSharp WebAssembly ondersteuning toe
+        run: dotnet add "Cyber Defense Game/Cyber_Defense_Game.Browser/Cyber_Defense_Game.Browser.csproj" package SkiaSharp.NativeAssets.WebAssembly
+
+      - name: 5. Publiceer de Avalonia Browser applicatie
         run: dotnet publish "Cyber Defense Game/Cyber_Defense_Game.Browser/Cyber_Defense_Game.Browser.csproj" -c Release -o ./publish
 
-      - name: 5. Sla de gebouwde website op voor de Raspberry Pi
+      - name: 6. Sla de gebouwde website op voor de Raspberry Pi
         uses: actions/upload-artifact@v4
         with:
           name: avalonia-wwwroot
           path: ./publish/wwwroot
 
   deploy:
-    needs: build            # Wacht tot het bouwen 100% gelukt is
-    runs-on: self-hosted    # Draait direct op jullie Raspberry Pi!
+    needs: build
+    runs-on: self-hosted
 
     steps:
       - name: 1. Download de nieuwe websitebestanden
