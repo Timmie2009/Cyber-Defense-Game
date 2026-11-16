@@ -1,41 +1,44 @@
 name: Build en Deploy Cyber Defense Quiz
- 
+
 on:
   push:
     branches:
       - main
   workflow_dispatch:
- 
+
 env:
   PROJECT: "Cyber Defense Game/Cyber_Defense_Game.Browser/Cyber_Defense_Game.Browser.csproj"
- 
+
 jobs:
   build:
     runs-on: ubuntu-latest
- 
+
     steps:
       - name: 1. Haal de broncode op
         uses: actions/checkout@v4
- 
+
       - name: 2. Installeer .NET 10 SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
- 
+
       - name: 3. Toon .NET versie
         run: dotnet --info
- 
-      - name: 4. Installeer WebAssembly tools (wasm-tools)
+
+      - name: 4. Installeer WebAssembly tools en project-workloads
         run: |
           dotnet workload install wasm-tools
+          dotnet workload restore "$PROJECT"
           dotnet workload list
- 
-      - name: 5. Restore
-        run: dotnet restore "$PROJECT"
- 
+
+      - name: 5. Voeg SkiaSharp WebAssembly ondersteuning toe en Restore
+        run: |
+          dotnet add "$PROJECT" package SkiaSharp.NativeAssets.WebAssembly
+          dotnet restore "$PROJECT"
+
       - name: 6. Toon Skia packages die gebruikt worden
         run: dotnet list "$PROJECT" package --include-transitive | grep -i -E "skia|avalonia" || true
- 
+
       - name: 7. Publiceer de Avalonia Browser applicatie (native build geforceerd)
         run: >
           dotnet publish "$PROJECT"
@@ -44,53 +47,52 @@ jobs:
           --no-restore
           -p:WasmBuildNative=true
           -bl:./publish-log.binlog
- 
+
       - name: 8. Controleer of SkiaSharp native is meegebouwd
         run: |
           echo "=== _framework native bestanden ==="
           ls -la ./publish/wwwroot/_framework/ | grep -i -E "native|skia" || true
- 
+
           NATIVE=$(find ./publish/wwwroot/_framework -name "dotnet.native.*.wasm" | head -n 1)
           if [ -z "$NATIVE" ]; then
             echo "::error::Geen dotnet.native.*.wasm gevonden in de publish output"
             exit 1
           fi
- 
+
           SIZE=$(stat -c%s "$NATIVE")
           echo "Native wasm: $NATIVE ($SIZE bytes)"
- 
-          # Heuristiek: met Skia erin is het bestand duidelijk groter dan een kale .NET wasm.
+
           if [ "$SIZE" -lt 5000000 ]; then
             echo "::warning::dotnet.native.wasm is klein ($SIZE bytes). libSkiaSharp is waarschijnlijk NIET meegelinkt."
           fi
- 
+
           echo "=== SkiaSharp in publish output ==="
           find ./publish -iname "*skia*" | head -n 20
- 
+
       - name: 9. Sla de build log op (voor diagnose)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: publish-binlog
           path: ./publish-log.binlog
- 
+
       - name: 10. Sla de gebouwde website op voor de Raspberry Pi
         uses: actions/upload-artifact@v4
         with:
           name: avalonia-wwwroot
           path: ./publish/wwwroot
- 
+
   deploy:
     needs: build
     runs-on: self-hosted
- 
+
     steps:
       - name: 1. Download de nieuwe websitebestanden
         uses: actions/download-artifact@v4
         with:
           name: avalonia-wwwroot
           path: /root/game/wwwroot-temp
- 
+
       - name: 2. Vervang de oude website en zet rechten goed
         run: |
           mkdir -p /root/game/wwwroot
@@ -98,6 +100,6 @@ jobs:
           cp -r /root/game/wwwroot-temp/* /root/game/wwwroot/
           rm -rf /root/game/wwwroot-temp
           chmod -R 755 /root/game/wwwroot
- 
+
       - name: 3. Herstart de Nginx webserver
         run: docker restart avalonia_website
