@@ -20,9 +20,10 @@
         </TextBlock>
 
 
-       <!-- <TextBox x:Name="Name" GotFocus="OnTextBoxGotFocus" HorizontalAlignment="Center" /> -->
+      <TextBox x:Name="NameInput" HorizontalAlignment="Center" />
 
 
+        <Button x:Name="SubmitNameButton" Content="Submit Name" HorizontalAlignment="Center" Click="Submit_Click" />
         <Button Content="Back" HorizontalAlignment="Center" Click="Back_Click" />
     </StackPanel>
 </UserControl>

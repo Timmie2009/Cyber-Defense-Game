@@ -5,6 +5,7 @@ namespace Cyber_Defense_Game;
 public static class GameState
 {
     private static int _selectedImage = 1;
+    public static string PlayerName = "User";
 
     public static event Action? ImageChanged;
 

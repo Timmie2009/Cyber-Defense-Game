@@ -1,66 +1,47 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Connections;
+﻿using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Cyber_Defense_Game;
 
+public record PlayerInfo(string ConnectionId, string Name);
+
 public static class GameConnection
 {
-    public const string DefaultServerUrl = "https://cyberquiz.tail9822f1.ts.net";
-
     private static HubConnection? _connection;
-    private static Task? _connecting;
 
-    public static Task ConnectAsync(string? serverUrl = null)
+    public static event Action<List<PlayerInfo>>? PlayersUpdated;
+    public static event Action<string, string, int>? AnswerReceived;
+
+    public static async Task ConnectAsync(string serverUrl)
     {
-        if (_connection?.State == HubConnectionState.Connected)
-            return Task.CompletedTask;
+        if (_connection != null) return;
 
-        return _connecting ??= StartAsync(serverUrl ?? DefaultServerUrl);
+        _connection = new HubConnectionBuilder()
+            .WithUrl($"{serverUrl.TrimEnd('/')}/gamehub",
+                o => o.Transports = HttpTransportType.WebSockets)
+            .WithAutomaticReconnect()
+            .Build();
+
+        _connection.On<int>("ImageChanged", n => GameState.SelectedImage = n);
+        _connection.On<List<PlayerInfo>>("PlayersUpdated", p => PlayersUpdated?.Invoke(p));
+        _connection.On<string, string, int>("AnswerReceived",
+            (id, name, answer) => AnswerReceived?.Invoke(id, name, answer));
+
+        await _connection.StartAsync();
     }
 
-    private static async Task StartAsync(string serverUrl)
-    {
-        try
-        {
-            serverUrl = serverUrl.Trim().TrimEnd('/');
+    public static Task JoinLobbyAsync(string name) =>
+        _connection?.InvokeAsync("JoinLobby", name) ?? Task.CompletedTask;
 
-            if (serverUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
-                serverUrl = "https://" + serverUrl.Substring("http://".Length);
-            else if (!serverUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                serverUrl = "https://" + serverUrl;
+    public static Task RegisterAsHostAsync() =>
+        _connection?.InvokeAsync("RegisterAsHost") ?? Task.CompletedTask;
 
-            var connection = new HubConnectionBuilder()
-                .WithUrl($"{serverUrl}/gamehub", options =>
-                {
-                    options.Transports = HttpTransportType.WebSockets;
-                })
-                .WithAutomaticReconnect()
-                .Build();
+    public static Task SubmitAnswerAsync(int answer) =>
+        _connection?.InvokeAsync("SubmitAnswer", answer) ?? Task.CompletedTask;
 
-            connection.On<int>("ImageChanged", imageNumber =>
-            {
-                GameState.SelectedImage = imageNumber;
-            });
-
-            await connection.StartAsync();
-
-            _connection = connection;   // only stored after a successful start
-        }
-        finally
-        {
-            _connecting = null;         // allows a retry if it failed
-        }
-    }
-
-    public static async Task ChangeImageAsync(int imageNumber)
-    {
-        await ConnectAsync();           // connects first if needed
-
-        if (_connection == null)
-            return;
-
-        await _connection.InvokeAsync("ChangeImage", imageNumber);
-    }
+    public static Task ChangeImageAsync(int imageNumber) =>
+        _connection?.InvokeAsync("ChangeImage", imageNumber) ?? Task.CompletedTask;
 }

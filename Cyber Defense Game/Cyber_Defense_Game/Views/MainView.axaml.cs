@@ -13,9 +13,7 @@ public partial class MainView : UserControl
         Loaded += MainView_Loaded;
     }
 
-    private async void MainView_Loaded(
-        object? sender,
-        Avalonia.Interactivity.RoutedEventArgs e)
+    private async void MainView_Loaded(object? sender,Avalonia.Interactivity.RoutedEventArgs e)
     {
         Loaded -= MainView_Loaded;
 
