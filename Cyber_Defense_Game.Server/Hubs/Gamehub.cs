@@ -48,4 +48,10 @@ public class GameHub : Hub
 
     private Task BroadcastPlayers() =>
         Clients.All.SendAsync("PlayersUpdated", GetPlayerList());
+
+    public async Task NextQuestion()
+    {
+        await Clients.All.SendAsync("QuestionChanged");
+    }
+
 }

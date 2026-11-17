@@ -8,9 +8,10 @@ namespace Cyber_Defense_Game;
 
 public static class GameConnection
 {
-    public const string ClientVersion = "v1.0.6";
+    public const string ClientVersion = "v1.0.7";
 
     public static bool IsHost { get; set; }
+    public static event Action? QuestionChanged;
 
 
     private static HubConnection? _connection;
@@ -44,6 +45,9 @@ public static class GameConnection
 
         _connection.On("GameStarted", () => GameStarted?.Invoke());
 
+        _connection.On("QuestionChanged", () => QuestionChanged?.Invoke());
+
+
 
         await _connection.StartAsync();
     }
@@ -62,5 +66,8 @@ public static class GameConnection
 
     public static Task StartGameAsync() =>
     _connection?.InvokeAsync("StartGame") ?? Task.CompletedTask;
+    public static Task NextQuestionAsync() =>
+    _connection?.InvokeAsync("NextQuestion") ?? Task.CompletedTask;
+
 
 }

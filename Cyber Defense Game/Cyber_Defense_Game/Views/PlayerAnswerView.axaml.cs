@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using System;
@@ -15,6 +16,28 @@ public partial class PlayerAnswerView : UserControl
     }
 
     public PlayerAnswerView(MainView main) : this() => _main = main;
+
+    private void OnQuestionChanged()
+    {
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            _hasAnswered = false;
+            StatusText.Text = "Next question! Pick an answer!";
+        });
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        GameConnection.QuestionChanged -= OnQuestionChanged;
+        GameConnection.QuestionChanged += OnQuestionChanged;
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        GameConnection.QuestionChanged -= OnQuestionChanged;
+        base.OnDetachedFromVisualTree(e);
+    }
 
     private void Red_Click(object? sender, RoutedEventArgs e) => SendAnswer(0, "Red");
     private void Green_Click(object? sender, RoutedEventArgs e) => SendAnswer(1, "Green");
