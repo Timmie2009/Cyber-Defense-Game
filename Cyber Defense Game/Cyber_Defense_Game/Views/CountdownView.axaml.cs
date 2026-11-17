@@ -31,6 +31,11 @@ public partial class CountdownView : UserControl
         CountdownText.Text = "GO";
         await Task.Delay(1000);
 
+        CountdownText.Text = "GO";
+        await Task.Delay(1000);
+
+        _main?.ShowGame();
+
         // TODO: Navigate to your gameplay screen here
     }
 }

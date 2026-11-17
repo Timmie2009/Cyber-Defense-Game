@@ -48,6 +48,7 @@ public partial class JoinView : UserControl
             await GameConnection.ConnectAsync("https://cyberquiz.tail9822f1.ts.net");
             await GameConnection.JoinLobbyAsync(NameInput.Text ?? "Player");
             StatusText.Text = "Joined the lobby!";
+            GameConnection.IsHost = false;
         }
         catch (Exception ex)
         {

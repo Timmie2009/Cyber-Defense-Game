@@ -68,6 +68,7 @@ public partial class HostView : UserControl
     {
         GameState.ImageChanged -= OnImageChanged;
         GameConnection.PlayersUpdated -= OnPlayersUpdated;
+        GameConnection.IsHost = true;
         base.OnDetachedFromVisualTree(e);
     }
 

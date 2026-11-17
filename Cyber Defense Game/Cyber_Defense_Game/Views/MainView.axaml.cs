@@ -73,4 +73,12 @@ public partial class MainView : UserControl
 
         ContentHost.Content = menu;
     }
+    public void ShowGame()
+    {
+        if (GameConnection.IsHost)
+            ContentHost.Content = new HostQuestionView(this);
+        else
+            ContentHost.Content = new PlayerAnswerView(this);
+    }
+
 }

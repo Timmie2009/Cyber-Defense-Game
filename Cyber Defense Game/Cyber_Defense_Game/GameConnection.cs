@@ -10,6 +10,9 @@ public static class GameConnection
 {
     public const string ClientVersion = "v1.0.6";
 
+    public static bool IsHost { get; set; }
+
+
     private static HubConnection? _connection;
 
     public static List<string> CurrentPlayers { get; private set; } = new();
