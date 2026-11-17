@@ -2,31 +2,19 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Cyber_Defense_Game;
 
-[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-public class PlayerInfo
-{
-    [JsonPropertyName("connectionId")]
-    public string ConnectionId { get; set; } = string.Empty;
-
-    [JsonPropertyName("name")]
-    public string Name { get; set; } = string.Empty;
-}
-
 public static class GameConnection
 {
-    public const string ClientVersion = "v1.0.5";
+    public const string ClientVersion = "v1.0.6";
 
     private static HubConnection? _connection;
 
-    public static List<PlayerInfo> CurrentPlayers { get; private set; } = new();
+    public static List<string> CurrentPlayers { get; private set; } = new();
 
-    public static event Action<List<PlayerInfo>>? PlayersUpdated;
+    public static event Action<List<string>>? PlayersUpdated;
     public static event Action<string, string, int>? AnswerReceived;
 
     public static async Task ConnectAsync(string serverUrl)
@@ -40,10 +28,10 @@ public static class GameConnection
             .Build();
 
         _connection.On<int>("ImageChanged", n => GameState.SelectedImage = n);
-        _connection.On<List<PlayerInfo>>("PlayersUpdated", p =>
+        _connection.On<List<string>>("PlayersUpdated", p =>
         {
             Console.WriteLine($"PlayersUpdated received: {p?.Count ?? 0} players");
-            CurrentPlayers = p ?? new List<PlayerInfo>();
+            CurrentPlayers = p ?? new List<string>();
             PlayersUpdated?.Invoke(CurrentPlayers);
         });
         _connection.On<string, string, int>("AnswerReceived",

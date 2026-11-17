@@ -3,8 +3,6 @@ using System.Collections.Concurrent;
 
 namespace Cyber_Defense_Game.Server.Hubs;
 
-public record PlayerInfo(string ConnectionId, string Name);
-
 public class GameHub : Hub
 {
     // ConnectionId -> Name (static so it is shared across hub instances)
@@ -41,8 +39,8 @@ public class GameHub : Hub
         await base.OnDisconnectedAsync(exception);
     }
 
-    private static List<PlayerInfo> GetPlayerList() =>
-        Players.Select(p => new PlayerInfo(p.Key, p.Value)).ToList();
+    private static List<string> GetPlayerList() =>
+        Players.Values.ToList();
 
     private Task BroadcastPlayers() =>
         Clients.All.SendAsync("PlayersUpdated", GetPlayerList());

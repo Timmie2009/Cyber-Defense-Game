@@ -13,7 +13,6 @@ namespace Cyber_Defense_Game.Views;
 public partial class HostView : UserControl
 {
     private readonly MainView? _main;
-    private bool _connectStarted;
 
     public HostView()
     {
@@ -26,7 +25,7 @@ public partial class HostView : UserControl
     {
         try
         {
-            await GameConnection.ConnectAsync("https://ts.net");
+            await GameConnection.ConnectAsync("https://cyberquiz.tail9822f1.ts.net");
             await GameConnection.RegisterAsHostAsync();
             Console.WriteLine("Host registered successfully");
         }
@@ -38,16 +37,15 @@ public partial class HostView : UserControl
         }
     }
 
-
     private void OnImageChanged()
     {
         Avalonia.Threading.Dispatcher.UIThread.Post(LoadImage);
     }
 
-    private void OnPlayersUpdated(List<PlayerInfo> players)
+    private void OnPlayersUpdated(List<string> players)
     {
         Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            PlayerList.ItemsSource = players.Select(p => p.Name).ToList());
+            PlayerList.ItemsSource = players.ToList());
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -65,7 +63,6 @@ public partial class HostView : UserControl
 
         _ = ConnectToServerAsync();
     }
-
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
