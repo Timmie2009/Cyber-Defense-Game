@@ -14,7 +14,7 @@
 
     <Grid>
         <ContentControl x:Name="ContentHost" />
-        <TextBlock Text="v1.0.4"
+        <TextBlock Text="v1.0.5"
                    Foreground="Red"
                    FontSize="24"
                    Opacity="0.6"
