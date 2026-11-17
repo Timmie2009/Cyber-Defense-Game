@@ -2,15 +2,21 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Cyber_Defense_Game;
 
-public record PlayerInfo(string ConnectionId, string Name);
+public record PlayerInfo(
+    [property: JsonPropertyName("connectionId")] string ConnectionId,
+    [property: JsonPropertyName("name")] string Name
+);
 
 public static class GameConnection
 {
     private static HubConnection? _connection;
+
+    public static List<PlayerInfo> CurrentPlayers { get; private set; } = new();
 
     public static event Action<List<PlayerInfo>>? PlayersUpdated;
     public static event Action<string, string, int>? AnswerReceived;
@@ -26,7 +32,11 @@ public static class GameConnection
             .Build();
 
         _connection.On<int>("ImageChanged", n => GameState.SelectedImage = n);
-        _connection.On<List<PlayerInfo>>("PlayersUpdated", p => PlayersUpdated?.Invoke(p));
+        _connection.On<List<PlayerInfo>>("PlayersUpdated", p =>
+        {
+            CurrentPlayers = p ?? new List<PlayerInfo>();
+            PlayersUpdated?.Invoke(CurrentPlayers);
+        });
         _connection.On<string, string, int>("AnswerReceived",
             (id, name, answer) => AnswerReceived?.Invoke(id, name, answer));
 

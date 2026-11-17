@@ -56,6 +56,7 @@ public partial class HostView : UserControl
 
         GameConnection.PlayersUpdated -= OnPlayersUpdated;
         GameConnection.PlayersUpdated += OnPlayersUpdated;
+        OnPlayersUpdated(GameConnection.CurrentPlayers);
 
         LoadImage();
 
