@@ -14,7 +14,7 @@ public record PlayerInfo(
 
 public static class GameConnection
 {
-    public const string ClientVersion = "v1.0.3";
+    public const string ClientVersion = "v1.0.4";
 
     private static HubConnection? _connection;
 

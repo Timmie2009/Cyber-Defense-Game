@@ -26,15 +26,18 @@ public partial class HostView : UserControl
     {
         try
         {
-            await GameConnection.ConnectAsync("https://cyberquiz.tail9822f1.ts.net/");
+            await GameConnection.ConnectAsync("https://ts.net");
             await GameConnection.RegisterAsHostAsync();
-            Console.WriteLine("SignalR connected");
+            Console.WriteLine("Host registered successfully");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"SignalR failed: {ex}");
+            Console.WriteLine($"Host SignalR failed: {ex}");
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                PlayerList.ItemsSource = new List<string> { $"Error: {ex.Message}" });
         }
     }
+
 
     private void OnImageChanged()
     {
@@ -60,12 +63,9 @@ public partial class HostView : UserControl
 
         LoadImage();
 
-        if (!_connectStarted)
-        {
-            _connectStarted = true;
-            _ = ConnectToServerAsync();
-        }
+        _ = ConnectToServerAsync();
     }
+
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
