@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Controls;
+using System.Runtime.InteropServices.JavaScript;
 
 namespace Cyber_Defense_Game.Views;
 
@@ -21,7 +22,7 @@ public partial class MainView : UserControl
 
         try
         {
-            await GameConnection.ConnectAsync("http://145.93.116.9/");
+            await GameConnection.ConnectAsync("https://cyberquiz.tail9822f1.ts.net/");
         }
         catch (Exception ex)
         {
@@ -39,16 +40,30 @@ public partial class MainView : UserControl
         }
     }
 
+
     public void ShowMenu()
     {
         var menu = new MenuView();
 
-        menu.HostClicked += (_, _) =>
-            ContentHost.Content = new HostView(this);
+menu.HostClicked += (_, _) =>
+{
+    BrowserMusic.Play();
+    ContentHost.Content = new HostView(this);
+};
 
         menu.JoinClicked += (_, _) =>
             ContentHost.Content = new JoinView(this);
 
         ContentHost.Content = menu;
     }
+}
+
+
+public static partial class BrowserMusic
+{
+    [JSImport("playHostMusic", "main")]
+    public static partial void Play();
+
+    [JSImport("stopHostMusic", "main")]
+    public static partial void Stop();
 }

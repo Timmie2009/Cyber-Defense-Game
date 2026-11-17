@@ -50,5 +50,9 @@ public partial class HostView : UserControl
         }
     }
 
-    private void Back_Click(object? sender, RoutedEventArgs e) => _main?.ShowMenu();
+    private void Back_Click(object? sender, RoutedEventArgs e)
+    {
+        BrowserMusic.Stop();
+        _main?.ShowMenu();
+    }
 }
