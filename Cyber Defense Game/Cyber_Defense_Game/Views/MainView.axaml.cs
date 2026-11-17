@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia;
 using Avalonia.Controls;
 
 namespace Cyber_Defense_Game.Views;
@@ -13,7 +14,30 @@ public partial class MainView : UserControl
         Loaded += MainView_Loaded;
     }
 
-    private async void MainView_Loaded(object? sender,Avalonia.Interactivity.RoutedEventArgs e)
+    private void OnGameStarted()
+    {
+        Avalonia.Threading.Dispatcher.UIThread.Post(ShowCountdown);
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        GameConnection.GameStarted -= OnGameStarted;
+        GameConnection.GameStarted += OnGameStarted;
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        GameConnection.GameStarted -= OnGameStarted;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    public void ShowCountdown()
+    {
+        ContentHost.Content = new CountdownView(this);
+    }
+
+    private async void MainView_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         Loaded -= MainView_Loaded;
 

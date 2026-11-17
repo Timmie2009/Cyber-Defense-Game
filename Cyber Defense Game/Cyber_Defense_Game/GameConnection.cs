@@ -13,6 +13,8 @@ public static class GameConnection
     private static HubConnection? _connection;
 
     public static List<string> CurrentPlayers { get; private set; } = new();
+    public static event Action? GameStarted;
+
 
     public static event Action<List<string>>? PlayersUpdated;
     public static event Action<string, string, int>? AnswerReceived;
@@ -37,6 +39,9 @@ public static class GameConnection
         _connection.On<string, string, int>("AnswerReceived",
             (id, name, answer) => AnswerReceived?.Invoke(id, name, answer));
 
+        _connection.On("GameStarted", () => GameStarted?.Invoke());
+
+
         await _connection.StartAsync();
     }
 
@@ -51,4 +56,8 @@ public static class GameConnection
 
     public static Task ChangeImageAsync(int imageNumber) =>
         _connection?.InvokeAsync("ChangeImage", imageNumber) ?? Task.CompletedTask;
+
+    public static Task StartGameAsync() =>
+    _connection?.InvokeAsync("StartGame") ?? Task.CompletedTask;
+
 }

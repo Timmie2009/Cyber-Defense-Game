@@ -38,6 +38,10 @@ public class GameHub : Hub
         await BroadcastPlayers();
         await base.OnDisconnectedAsync(exception);
     }
+    public async Task StartGame()
+    {
+        await Clients.All.SendAsync("GameStarted");
+    }
 
     private static List<string> GetPlayerList() =>
         Players.Values.ToList();

@@ -88,5 +88,18 @@ public partial class HostView : UserControl
         }
     }
 
+    private async void Play_Click(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await GameConnection.StartGameAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"StartGame failed: {ex}");
+        }
+    }
+
+
     private void Back_Click(object? sender, RoutedEventArgs e) => _main?.ShowMenu();
 }
