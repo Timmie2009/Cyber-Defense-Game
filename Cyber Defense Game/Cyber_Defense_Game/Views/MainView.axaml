@@ -12,5 +12,16 @@
         <vm:MainViewModel />
     </Design.DataContext>
 
-    <ContentControl x:Name="ContentHost" />
+    <Grid>
+        <ContentControl x:Name="ContentHost" />
+        <TextBlock Text="v1.0.3"
+                   Foreground="Red"
+                   FontSize="24"
+                   Opacity="0.6"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Bottom"
+                   Margin="20"
+                   IsHitTestVisible="False" />
+    </Grid>
+
 </UserControl>
