@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia;
 using Avalonia.Controls;
+using System.Runtime.InteropServices.JavaScript;
 
 namespace Cyber_Defense_Game.Views;
 
@@ -61,18 +62,23 @@ public partial class MainView : UserControl
         }
     }
 
+
     public void ShowMenu()
     {
         var menu = new MenuView();
 
         menu.HostClicked += (_, _) =>
+        {
+            BrowserMusic.Play();
             ContentHost.Content = new HostView(this);
+        };
 
         menu.JoinClicked += (_, _) =>
             ContentHost.Content = new JoinView(this);
 
         ContentHost.Content = menu;
     }
+
     public void ShowGame()
     {
         if (GameConnection.IsHost)
@@ -80,5 +86,16 @@ public partial class MainView : UserControl
         else
             ContentHost.Content = new PlayerAnswerView(this);
     }
+
+}
+
+
+public static partial class BrowserMusic
+{
+    [JSImport("playHostMusic", "main")]
+    public static partial void Play();
+
+    [JSImport("stopHostMusic", "main")]
+    public static partial void Stop();
 
 }

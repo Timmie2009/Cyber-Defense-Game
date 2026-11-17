@@ -1,5 +1,11 @@
-﻿using System;
+
+using System;
+
+
+using System.Runtime.Versioning;
+
 using System.Threading.Tasks;
+using System.Runtime.InteropServices.JavaScript;
 using Avalonia;
 using Avalonia.Browser;
 using Cyber_Defense_Game;
@@ -22,6 +28,9 @@ internal sealed partial class Program
                 foreach (var i in ag.InnerExceptions)
                     Console.WriteLine("AGG: " + i);
         }
+
+        await JSHost.ImportAsync("main", "../music.js");
+
 
         await BuildAvaloniaApp()
             .WithInterFont()
