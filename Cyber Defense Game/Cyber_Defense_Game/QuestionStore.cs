@@ -68,6 +68,29 @@ public static class QuestionStore
             });
         }
     }
+    public static void RemoveLocal(string questionName)
+    {
+        if (string.IsNullOrWhiteSpace(questionName)) return;
+
+        _questionsByName.Remove(questionName.Trim());
+        DeleteQuestionFile(questionName);
+        QuestionsChanged?.Invoke();
+    }
+
+    private static void DeleteQuestionFile(string title)
+    {
+        if (OperatingSystem.IsBrowser()) return;
+
+        try
+        {
+            var path = Path.Combine(QuestionsFolder, $"{GetSafeFileName(title)}.json");
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch { }
+    }
 
     public static List<QuizQuestion> GetAll() => _questionsByName.Values.ToList();
 

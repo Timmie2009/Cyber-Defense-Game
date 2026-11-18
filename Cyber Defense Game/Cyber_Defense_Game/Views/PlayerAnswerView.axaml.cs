@@ -19,39 +19,34 @@ public partial class PlayerAnswerView : UserControl
 
     public PlayerAnswerView(MainView main) : this() => _main = main;
 
-    private void OnQuestionChanged()
-    {
-        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-        {
-            _hasAnswered = false;
-            SelectedImage.IsVisible = false;
-            SelectedImage.Source = null;
-            AnswerGrid.IsVisible = true;
-            StatusText.Text = "Next question! Pick an answer!";
-        });
-    }
     private void OnQuestionLoaded(string questionName)
     {
         var q = QuestionStore.GetByName(questionName);
+
         Avalonia.Threading.Dispatcher.UIThread.Post(() =>
         {
             _hasAnswered = false;
             SelectedImage.IsVisible = false;
             SelectedImage.Source = null;
             AnswerGrid.IsVisible = true;
-            StatusText.Text = $"[{q.Difficulty}] Pick an answer!";
+            StatusText.Text = $"[{q.Difficulty}] {q.Title} - Pick an answer!";
         });
     }
+
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        GameConnection.QuestionChanged -= OnQuestionChanged;
-        GameConnection.QuestionChanged += OnQuestionChanged;
+
+        QuestionStore.QuestionLoaded -= OnQuestionLoaded;
+        QuestionStore.QuestionLoaded += OnQuestionLoaded;
+
+        var current = QuestionStore.GetCurrentQuestion();
+        StatusText.Text = $"[{current.Difficulty}] {current.Title} - Pick an answer!";
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        GameConnection.QuestionChanged -= OnQuestionChanged;
+        QuestionStore.QuestionLoaded -= OnQuestionLoaded;
         base.OnDetachedFromVisualTree(e);
     }
 

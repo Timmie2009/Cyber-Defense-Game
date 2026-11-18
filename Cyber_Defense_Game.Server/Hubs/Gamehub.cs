@@ -33,6 +33,18 @@ public class GameHub : Hub
         var clean = new string(title.Trim().Select(c => invalid.Contains(c) ? '_' : c).ToArray());
         return string.IsNullOrWhiteSpace(clean) ? "Untitled" : clean;
     }
+    public async Task DeleteQuestion(string questionName)
+    {
+        lock (FileLock)
+        {
+            var path = Path.Combine(QuestionsFolder, $"{GetSafeFileName(questionName)}.json");
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        await Clients.All.SendAsync("QuestionDeleted", questionName);
+    }
 
     private static void EnsureDefaultQuestion()
     {
