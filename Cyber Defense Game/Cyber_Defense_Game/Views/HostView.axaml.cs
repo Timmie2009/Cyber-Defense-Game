@@ -89,6 +89,7 @@ public partial class HostView : UserControl
         }
     }
 
+
     private async void Play_Click(object? sender, RoutedEventArgs e)
     {
         try
@@ -101,6 +102,10 @@ public partial class HostView : UserControl
         }
     }
 
-
-    private void Back_Click(object? sender, RoutedEventArgs e) => _main?.ShowMenu();
+    private void Back_Click(object? sender, RoutedEventArgs e)
+    {
+        BrowserMusic.StopSafe();
+        _main?.ShowMenu();
+    }
 }
+

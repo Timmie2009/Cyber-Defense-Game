@@ -9,5 +9,7 @@
         <Button Content="JOIN" Width="160" Height="60" FontSize="20"
                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                 Click="Join_Click" />
+        <Button Content="Create Question" Click="CreateQuestion_Click" />
+
     </StackPanel>
 </UserControl>

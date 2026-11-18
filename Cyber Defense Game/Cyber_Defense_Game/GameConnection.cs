@@ -47,7 +47,25 @@ public static class GameConnection
 
         _connection.On("QuestionChanged", () => QuestionChanged?.Invoke());
 
+        _connection.On<QuizQuestion>("QuestionSaved", q =>
+        {
+            if (q != null) QuestionStore.AddOrUpdateLocal(q);
+        });
 
+        _connection.On<string>("QuestionLoaded", questionName =>
+        {
+            QuestionStore.SetActiveQuestion(questionName);
+        });
+
+        await _connection.StartAsync();
+
+        // Sync all saved <QuestionName>.json files from the server into local storage
+        var serverQuestions = await _connection.InvokeAsync<List<QuizQuestion>>("GetAllQuestions");
+        if (serverQuestions != null)
+        {
+            foreach (var q in serverQuestions)
+                QuestionStore.AddOrUpdateLocal(q);
+        }
 
         await _connection.StartAsync();
     }
@@ -68,6 +86,13 @@ public static class GameConnection
     _connection?.InvokeAsync("StartGame") ?? Task.CompletedTask;
     public static Task NextQuestionAsync() =>
     _connection?.InvokeAsync("NextQuestion") ?? Task.CompletedTask;
+
+    public static Task SaveQuestionAsync(QuizQuestion question) =>
+    _connection?.InvokeAsync("SaveQuestion", question) ?? Task.CompletedTask;
+
+    public static Task LoadQuestionAsync(string questionName) =>
+        _connection?.InvokeAsync("LoadQuestion", questionName) ?? Task.CompletedTask;
+
 
 
 }

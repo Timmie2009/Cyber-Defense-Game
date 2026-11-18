@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using System;
 
 namespace Cyber_Defense_Game.Views;
@@ -22,10 +24,24 @@ public partial class PlayerAnswerView : UserControl
         Avalonia.Threading.Dispatcher.UIThread.Post(() =>
         {
             _hasAnswered = false;
+            SelectedImage.IsVisible = false;
+            SelectedImage.Source = null;
+            AnswerGrid.IsVisible = true;
             StatusText.Text = "Next question! Pick an answer!";
         });
     }
-
+    private void OnQuestionLoaded(string questionName)
+    {
+        var q = QuestionStore.GetByName(questionName);
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            _hasAnswered = false;
+            SelectedImage.IsVisible = false;
+            SelectedImage.Source = null;
+            AnswerGrid.IsVisible = true;
+            StatusText.Text = $"[{q.Difficulty}] Pick an answer!";
+        });
+    }
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -39,12 +55,19 @@ public partial class PlayerAnswerView : UserControl
         base.OnDetachedFromVisualTree(e);
     }
 
-    private void Red_Click(object? sender, RoutedEventArgs e) => SendAnswer(0, "Red");
-    private void Green_Click(object? sender, RoutedEventArgs e) => SendAnswer(1, "Green");
-    private void Blue_Click(object? sender, RoutedEventArgs e) => SendAnswer(2, "Blue");
-    private void White_Click(object? sender, RoutedEventArgs e) => SendAnswer(3, "White");
+    private void Red_Click(object? sender, RoutedEventArgs e) =>
+        SendAnswer(0, "Red", "avares://Cyber_Defense_Game/Assets/Rood.png");
 
-    private async void SendAnswer(int index, string label)
+    private void Green_Click(object? sender, RoutedEventArgs e) =>
+        SendAnswer(1, "Green", "avares://Cyber_Defense_Game/Assets/Groen.png");
+
+    private void Blue_Click(object? sender, RoutedEventArgs e) =>
+        SendAnswer(2, "Blue", "avares://Cyber_Defense_Game/Assets/Blauw.png");
+
+    private void White_Click(object? sender, RoutedEventArgs e) =>
+        SendAnswer(3, "White", "avares://Cyber_Defense_Game/Assets/Wit.png");
+
+    private async void SendAnswer(int index, string label, string assetPath)
     {
         if (_hasAnswered) return;
         _hasAnswered = true;
@@ -52,6 +75,12 @@ public partial class PlayerAnswerView : UserControl
         try
         {
             await GameConnection.SubmitAnswerAsync(index);
+
+            using var stream = AssetLoader.Open(new Uri(assetPath));
+            SelectedImage.Source = new Bitmap(stream);
+            AnswerGrid.IsVisible = false;
+            SelectedImage.IsVisible = true;
+
             StatusText.Text = $"You picked {label}! Waiting for other players...";
         }
         catch (Exception ex)
