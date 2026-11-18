@@ -13,61 +13,81 @@ public static class GameConnection
     public static bool IsHost { get; set; }
     public static event Action? QuestionChanged;
 
-
     private static HubConnection? _connection;
+    private static Task? _connectTask;
 
     public static List<string> CurrentPlayers { get; private set; } = new();
     public static event Action? GameStarted;
 
-
     public static event Action<List<string>>? PlayersUpdated;
     public static event Action<string, string, int>? AnswerReceived;
 
-    public static async Task ConnectAsync(string serverUrl)
+    public static Task ConnectAsync(string serverUrl)
     {
-        if (_connection != null) return;
+        if (_connectTask != null)
+            return _connectTask;
 
-        _connection = new HubConnectionBuilder()
-            .WithUrl($"{serverUrl.TrimEnd('/')}/gamehub",
-                o => o.Transports = HttpTransportType.WebSockets)
-            .WithAutomaticReconnect()
-            .Build();
+        _connectTask = ConnectInternalAsync(serverUrl);
+        return _connectTask;
+    }
 
-        _connection.On<int>("ImageChanged", n => GameState.SelectedImage = n);
-        _connection.On<List<string>>("PlayersUpdated", p =>
+    private static async Task ConnectInternalAsync(string serverUrl)
+    {
+        try
         {
-            Console.WriteLine($"PlayersUpdated received: {p?.Count ?? 0} players");
-            CurrentPlayers = p ?? new List<string>();
-            PlayersUpdated?.Invoke(CurrentPlayers);
-        });
-        _connection.On<string, string, int>("AnswerReceived",
-            (id, name, answer) => AnswerReceived?.Invoke(id, name, answer));
+            _connection = new HubConnectionBuilder()
+                .WithUrl($"{serverUrl.TrimEnd('/')}/gamehub",
+                    o => o.Transports = HttpTransportType.WebSockets)
+                .WithAutomaticReconnect()
+                .Build();
 
-        _connection.On("GameStarted", () => GameStarted?.Invoke());
+            _connection.On<int>("ImageChanged", n => GameState.SelectedImage = n);
+            _connection.On<List<string>>("PlayersUpdated", p =>
+            {
+                Console.WriteLine($"PlayersUpdated received: {p?.Count ?? 0} players");
+                CurrentPlayers = p ?? new List<string>();
+                PlayersUpdated?.Invoke(CurrentPlayers);
+            });
+            _connection.On<string, string, int>("AnswerReceived",
+                (id, name, answer) => AnswerReceived?.Invoke(id, name, answer));
 
-        _connection.On("QuestionChanged", () => QuestionChanged?.Invoke());
+            _connection.On("GameStarted", () => GameStarted?.Invoke());
 
-        _connection.On<QuizQuestion>("QuestionSaved", q =>
-        {
-            if (q != null) QuestionStore.AddOrUpdateLocal(q);
-        });
+            _connection.On("QuestionChanged", () => QuestionChanged?.Invoke());
 
-        _connection.On<string>("QuestionLoaded", questionName =>
-        {
-            QuestionStore.SetActiveQuestion(questionName);
-        });
+            _connection.On<QuizQuestion>("QuestionSaved", q =>
+            {
+                if (q != null) QuestionStore.AddOrUpdateLocal(q);
+            });
 
-        await _connection.StartAsync();
+            _connection.On<string>("QuestionLoaded", questionName =>
+            {
+                QuestionStore.SetActiveQuestion(questionName);
+            });
 
-        // Sync all saved <QuestionName>.json files from the server into local storage
-        var serverQuestions = await _connection.InvokeAsync<List<QuizQuestion>>("GetAllQuestions");
-        if (serverQuestions != null)
-        {
-            foreach (var q in serverQuestions)
-                QuestionStore.AddOrUpdateLocal(q);
+            await _connection.StartAsync();
+
+            try
+            {
+                // Sync all saved <QuestionName>.json files from the server into local storage
+                var serverQuestions = await _connection.InvokeAsync<List<QuizQuestion>>("GetAllQuestions");
+                if (serverQuestions != null)
+                {
+                    foreach (var q in serverQuestions)
+                        QuestionStore.AddOrUpdateLocal(q);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"GetAllQuestions warning: {ex.Message}");
+            }
         }
-
-        await _connection.StartAsync();
+        catch
+        {
+            _connectTask = null;
+            _connection = null;
+            throw;
+        }
     }
 
     public static Task JoinLobbyAsync(string name) =>
@@ -83,16 +103,14 @@ public static class GameConnection
         _connection?.InvokeAsync("ChangeImage", imageNumber) ?? Task.CompletedTask;
 
     public static Task StartGameAsync() =>
-    _connection?.InvokeAsync("StartGame") ?? Task.CompletedTask;
+        _connection?.InvokeAsync("StartGame") ?? Task.CompletedTask;
+
     public static Task NextQuestionAsync() =>
-    _connection?.InvokeAsync("NextQuestion") ?? Task.CompletedTask;
+        _connection?.InvokeAsync("NextQuestion") ?? Task.CompletedTask;
 
     public static Task SaveQuestionAsync(QuizQuestion question) =>
-    _connection?.InvokeAsync("SaveQuestion", question) ?? Task.CompletedTask;
+        _connection?.InvokeAsync("SaveQuestion", question) ?? Task.CompletedTask;
 
     public static Task LoadQuestionAsync(string questionName) =>
         _connection?.InvokeAsync("LoadQuestion", questionName) ?? Task.CompletedTask;
-
-
-
 }
