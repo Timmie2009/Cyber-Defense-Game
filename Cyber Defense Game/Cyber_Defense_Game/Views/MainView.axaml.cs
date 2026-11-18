@@ -1,7 +1,9 @@
-﻿using System;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
+using System;
 using System.Runtime.InteropServices.JavaScript;
+using System.Runtime.Versioning;
 
 namespace Cyber_Defense_Game.Views;
 
@@ -19,6 +21,12 @@ public partial class MainView : UserControl
     {
         Avalonia.Threading.Dispatcher.UIThread.Post(ShowCountdown);
     }
+    public event EventHandler? HostClicked;
+    public event EventHandler? JoinClicked;
+    public event EventHandler? CreateQuestionClicked;
+
+    private void CreateQuestion_Click(object? sender, RoutedEventArgs e) =>
+        CreateQuestionClicked?.Invoke(this, EventArgs.Empty);
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -62,19 +70,24 @@ public partial class MainView : UserControl
         }
     }
 
-
     public void ShowMenu()
     {
+        BrowserMusic.StopSafe();
+
         var menu = new MenuView();
 
         menu.HostClicked += (_, _) =>
         {
-            BrowserMusic.Play();
+            BrowserMusic.PlaySafe();
             ContentHost.Content = new HostView(this);
         };
 
         menu.JoinClicked += (_, _) =>
             ContentHost.Content = new JoinView(this);
+
+        menu.CreateQuestionClicked += (_, _) =>
+    ContentHost.Content = new CreateQuestionView(this);
+
 
         ContentHost.Content = menu;
     }
@@ -86,16 +99,31 @@ public partial class MainView : UserControl
         else
             ContentHost.Content = new PlayerAnswerView(this);
     }
-
 }
-
 
 public static partial class BrowserMusic
 {
+    public static void PlaySafe()
+    {
+        if (OperatingSystem.IsBrowser())
+        {
+            Play();
+        }
+    }
+
+    public static void StopSafe()
+    {
+        if (OperatingSystem.IsBrowser())
+        {
+            Stop();
+        }
+    }
+
+    [SupportedOSPlatform("browser")]
     [JSImport("playHostMusic", "main")]
     public static partial void Play();
 
+    [SupportedOSPlatform("browser")]
     [JSImport("stopHostMusic", "main")]
     public static partial void Stop();
-
 }

@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Cyber_Defense_Game.Views.CreateQuestionView">
+  <ScrollViewer Margin="20">
+        <StackPanel MaxWidth="500" Spacing="12" HorizontalAlignment="Center">
+            <TextBlock Text="Create a Question"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center" />
+
+            <TextBlock Text="Question Name (Title):" FontWeight="SemiBold" />
+            <TextBox x:Name="TitleInput" Watermark="e.g. Phishing Basics" />
+
+            <TextBlock Text="Question:" FontWeight="SemiBold" />
+            <TextBox x:Name="QuestionInput" Watermark="e.g. Which link is safe to click?" />
+
+            <TextBlock Text="Answer A (Red):" FontWeight="SemiBold" />
+            <TextBox x:Name="OptionAInput" Watermark="Answer A" />
+
+            <TextBlock Text="Answer B (Green):" FontWeight="SemiBold" />
+            <TextBox x:Name="OptionBInput" Watermark="Answer B" />
+
+            <TextBlock Text="Answer C (Blue):" FontWeight="SemiBold" />
+            <TextBox x:Name="OptionCInput" Watermark="Answer C" />
+
+            <TextBlock Text="Answer D (White):" FontWeight="SemiBold" />
+            <TextBox x:Name="OptionDInput" Watermark="Answer D" />
+            <TextBlock Text="Difficulty:" FontWeight="SemiBold" />
+<ComboBox x:Name="DifficultyBox" SelectedIndex="1" HorizontalAlignment="Stretch">
+    <ComboBoxItem Content="Easy" />
+    <ComboBoxItem Content="Normal" />
+    <ComboBoxItem Content="Hard" />
+</ComboBox>
+
+            <TextBlock Text="Correct Answer:" FontWeight="SemiBold" />
+            <ComboBox x:Name="CorrectAnswerBox" SelectedIndex="0" HorizontalAlignment="Stretch">
+                <ComboBoxItem Content="A (Red)" />
+                <ComboBoxItem Content="B (Green)" />
+                <ComboBoxItem Content="C (Blue)" />
+                <ComboBoxItem Content="D (White)" />
+            </ComboBox>
+
+            <TextBlock x:Name="StatusText"
+                       Foreground="Green"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center" />
+
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Margin="0,10,0,0">
+                <Button Content="Save Question" Click="Save_Click" />
+                <Button Content="Back to Menu" Click="Back_Click" />
+            </StackPanel>
+
+            <TextBlock Text="Saved Questions:" FontWeight="Bold" Margin="0,15,0,0" />
+            <ListBox x:Name="SavedQuestionsList" Height="130" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -15,9 +15,8 @@ public partial class HostQuestionView : UserControl
     private readonly Dictionary<string, (string Name, int AnswerIndex)> _playerAnswers = new();
     private CancellationTokenSource? _timerCts;
     private bool _timeUp;
-
-    // 0 = Red, 1 = Green, 2 = Blue, 3 = White
-    private const int CorrectAnswerIndex = 2;
+    private int _questionIndex = 0;
+    private QuizQuestion _currentQuestion = QuestionStore.GetCurrentQuestion();
 
     public HostQuestionView()
     {
@@ -43,6 +42,15 @@ public partial class HostQuestionView : UserControl
         GameConnection.AnswerReceived -= OnAnswerReceived;
         GameConnection.AnswerReceived += OnAnswerReceived;
 
+        _questionIndex = 0;
+        var all = QuestionStore.GetAll();
+        if (all.Count > 0)
+        {
+            string firstName = all[0].Title;
+            QuestionStore.SetActiveQuestion(firstName);
+            _ = GameConnection.LoadQuestionAsync(firstName);
+        }
+
         StartRound();
     }
 
@@ -55,6 +63,14 @@ public partial class HostQuestionView : UserControl
 
     private void StartRound()
     {
+        _currentQuestion = QuestionStore.GetCurrentQuestion();
+
+        QuestionTitleText.Text = $"[{_currentQuestion.Difficulty}] {_currentQuestion.QuestionText}";
+        OptionAText.Text = $"A: {_currentQuestion.OptionA}";
+        OptionBText.Text = $"B: {_currentQuestion.OptionB}";
+        OptionCText.Text = $"C: {_currentQuestion.OptionC}";
+        OptionDText.Text = $"D: {_currentQuestion.OptionD}";
+
         lock (_playerAnswers)
         {
             _playerAnswers.Clear();
@@ -71,14 +87,21 @@ public partial class HostQuestionView : UserControl
 
     private async void NextQuestion_Click(object? sender, RoutedEventArgs e)
     {
+        var all = QuestionStore.GetAll();
+        if (all.Count == 0) return;
+
+        _questionIndex = (_questionIndex + 1) % all.Count;
+        string nextName = all[_questionIndex].Title;
+
         try
         {
-            await GameConnection.NextQuestionAsync();
+            await GameConnection.LoadQuestionAsync(nextName);
+            QuestionStore.SetActiveQuestion(nextName);
             StartRound();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"NextQuestion failed: {ex}");
+            Console.WriteLine($"LoadQuestion failed: {ex}");
         }
     }
 
@@ -97,18 +120,35 @@ public partial class HostQuestionView : UserControl
             if (token.IsCancellationRequested) return;
 
             _timeUp = true;
-            TimerText.Text = "Time's up! Correct answer: Blue";
+            string[] options =
+            {
+                $"A ({_currentQuestion.OptionA})",
+                $"B ({_currentQuestion.OptionB})",
+                $"C ({_currentQuestion.OptionC})",
+                $"D ({_currentQuestion.OptionD})"
+            };
+            string correctLabel = _currentQuestion.CorrectIndex >= 0 && _currentQuestion.CorrectIndex < options.Length
+                ? options[_currentQuestion.CorrectIndex]
+                : "Unknown";
+
+            TimerText.Text = $"Time's up! Correct answer: {correctLabel}";
             RevealResults();
         }
         catch (TaskCanceledException)
         {
-            // Expected when starting the next round or leaving the view
+            // Expected when moving to the next round or leaving the screen
         }
     }
 
     private void RevealResults()
     {
-        string[] options = { "Red", "Green", "Blue", "White" };
+        string[] options =
+        {
+            $"A: {_currentQuestion.OptionA}",
+            $"B: {_currentQuestion.OptionB}",
+            $"C: {_currentQuestion.OptionC}",
+            $"D: {_currentQuestion.OptionD}"
+        };
         List<string> results = new();
 
         lock (_playerAnswers)
@@ -126,10 +166,10 @@ public partial class HostQuestionView : UserControl
                     string chosen = entry.AnswerIndex >= 0 && entry.AnswerIndex < options.Length
                         ? options[entry.AnswerIndex]
                         : "Unknown";
-                    bool isRight = entry.AnswerIndex == CorrectAnswerIndex;
+                    bool isRight = entry.AnswerIndex == _currentQuestion.CorrectIndex;
                     string status = isRight ? "✅ Right" : "❌ Wrong";
 
-                    results.Add($"{playerName}: {chosen} ({status})");
+                    results.Add($"{entry.Name}: {chosen} ({status})");
                 }
             }
         }
