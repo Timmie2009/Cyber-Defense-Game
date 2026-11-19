@@ -7,11 +7,13 @@ namespace Cyber_Defense_Game.Views;
 public partial class JoinView : UserControl
 {
     private readonly MainView? _main;
+    private string _enteredName = string.Empty;
 
     public JoinView()
     {
         InitializeComponent();
         NameInput.PointerPressed += (_, _) => NameInput.Focus();
+        NameInput.TextChanged += (_, _) => _enteredName = NameInput.Text ?? string.Empty;
     }
 
     public JoinView(MainView main) : this() => _main = main;
@@ -44,12 +46,21 @@ public partial class JoinView : UserControl
 
     private async void Submit_Click(object? sender, RoutedEventArgs e)
     {
+        // Shift focus so mobile virtual keyboards finalize IME composition
+        SubmitNameButton.Focus();
+
+        string playerName = !string.IsNullOrWhiteSpace(NameInput.Text)
+            ? NameInput.Text.Trim()
+            : !string.IsNullOrWhiteSpace(_enteredName)
+                ? _enteredName.Trim()
+                : "Player";
+
         try
         {
-            await GameConnection.ConnectAsync("https://cyberquiz.tail9822f1.ts.net");
-            await GameConnection.JoinLobbyAsync(NameInput.Text ?? "Player");
-            StatusText.Text = "Joined the lobby!";
             GameConnection.IsHost = false;
+            await GameConnection.ConnectAsync("https://cyberquiz.tail9822f1.ts.net");
+            await GameConnection.JoinLobbyAsync(playerName);
+            StatusText.Text = $"Joined the lobby as {playerName}!";
         }
         catch (Exception ex)
         {
