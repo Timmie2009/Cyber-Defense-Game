@@ -21,12 +21,6 @@ public partial class MainView : UserControl
     {
         Avalonia.Threading.Dispatcher.UIThread.Post(ShowCountdown);
     }
-    public event EventHandler? HostClicked;
-    public event EventHandler? JoinClicked;
-    public event EventHandler? CreateQuestionClicked;
-
-    private void CreateQuestion_Click(object? sender, RoutedEventArgs e) =>
-        CreateQuestionClicked?.Invoke(this, EventArgs.Empty);
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -46,7 +40,7 @@ public partial class MainView : UserControl
         ContentHost.Content = new CountdownView(this);
     }
 
-    private async void MainView_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private async void MainView_Loaded(object? sender, RoutedEventArgs e)
     {
         Loaded -= MainView_Loaded;
 
@@ -78,16 +72,19 @@ public partial class MainView : UserControl
 
         menu.HostClicked += (_, _) =>
         {
+            GameConnection.IsHost = true;
             BrowserMusic.PlaySafe();
             ContentHost.Content = new HostView(this);
         };
 
         menu.JoinClicked += (_, _) =>
+        {
+            GameConnection.IsHost = false;
             ContentHost.Content = new JoinView(this);
+        };
 
         menu.CreateQuestionClicked += (_, _) =>
-    ContentHost.Content = new CreateQuestionView(this);
-
+            ContentHost.Content = new CreateQuestionView(this);
 
         ContentHost.Content = menu;
     }
@@ -121,9 +118,25 @@ public static partial class BrowserMusic
 
     [SupportedOSPlatform("browser")]
     [JSImport("playHostMusic", "main")]
-    public static partial void Play();
+    private static partial void Play();
 
     [SupportedOSPlatform("browser")]
     [JSImport("stopHostMusic", "main")]
-    public static partial void Stop();
+    private static partial void Stop();
+}
+
+public static partial class BrowserInput
+{
+    public static string? AskName(string message, string defaultValue = "")
+    {
+        if (OperatingSystem.IsBrowser())
+        {
+            return Prompt(message, defaultValue);
+        }
+        return null;
+    }
+
+    [SupportedOSPlatform("browser")]
+    [JSImport("globalThis.prompt")]
+    private static partial string? Prompt(string message, string defaultValue);
 }

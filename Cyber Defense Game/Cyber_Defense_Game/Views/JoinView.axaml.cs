@@ -12,8 +12,22 @@ public partial class JoinView : UserControl
     public JoinView()
     {
         InitializeComponent();
-        NameInput.PointerPressed += (_, _) => NameInput.Focus();
         NameInput.TextChanged += (_, _) => _enteredName = NameInput.Text ?? string.Empty;
+
+        NameInput.PointerPressed += (_, _) =>
+        {
+            NameInput.Focus();
+
+            if (OperatingSystem.IsBrowser() && string.IsNullOrWhiteSpace(NameInput.Text))
+            {
+                var prompted = BrowserInput.AskName("Enter your player name:", _enteredName);
+                if (!string.IsNullOrWhiteSpace(prompted))
+                {
+                    NameInput.Text = prompted.Trim();
+                    _enteredName = prompted.Trim();
+                }
+            }
+        };
     }
 
     public JoinView(MainView main) : this() => _main = main;
@@ -46,14 +60,24 @@ public partial class JoinView : UserControl
 
     private async void Submit_Click(object? sender, RoutedEventArgs e)
     {
-        // Shift focus so mobile virtual keyboards finalize IME composition
         SubmitNameButton.Focus();
 
         string playerName = !string.IsNullOrWhiteSpace(NameInput.Text)
             ? NameInput.Text.Trim()
-            : !string.IsNullOrWhiteSpace(_enteredName)
-                ? _enteredName.Trim()
-                : "Player";
+            : _enteredName.Trim();
+
+        if (OperatingSystem.IsBrowser() && string.IsNullOrWhiteSpace(playerName))
+        {
+            var prompted = BrowserInput.AskName("Enter your player name:", "");
+            if (!string.IsNullOrWhiteSpace(prompted))
+            {
+                playerName = prompted.Trim();
+                NameInput.Text = playerName;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(playerName))
+            playerName = "Player";
 
         try
         {
