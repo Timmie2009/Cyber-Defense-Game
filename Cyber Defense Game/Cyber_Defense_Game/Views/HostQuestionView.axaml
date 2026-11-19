@@ -5,19 +5,21 @@
              x:Class="Cyber_Defense_Game.Views.HostQuestionView">
      <DockPanel Margin="30">
         <!-- Question & Countdown Header -->
-        <StackPanel DockPanel.Dock="Top" Spacing="10" Margin="0,10,0,20" HorizontalAlignment="Center">
-            <TextBlock x:Name="QuestionTitleText"
-                       Text="What color is the sky?"
-                       FontSize="36"
-                       FontWeight="Bold"
-                       HorizontalAlignment="Center" />
-            <TextBlock x:Name="TimerText"
-                       Text="Time left: 10"
-                       FontSize="28"
-                       FontWeight="SemiBold"
-                       Foreground="#E53935"
-                       HorizontalAlignment="Center" />
-        </StackPanel>
+      <StackPanel DockPanel.Dock="Top" Spacing="10" Margin="20,10,20,20">
+    <TextBlock x:Name="QuestionTitleText"
+               Text="What color is the sky?"
+               FontSize="36"
+               FontWeight="Bold"
+               TextWrapping="Wrap"
+               TextAlignment="Center"
+               HorizontalAlignment="Center" />
+    <TextBlock x:Name="TimerText"
+               Text="Time left: 10"
+               FontSize="28"
+               FontWeight="SemiBold"
+               Foreground="#E53935"
+               HorizontalAlignment="Center" />
+</StackPanel>
 
         <!-- Hidden until timer reaches 0 -->
         <StackPanel x:Name="ResultsPanel"

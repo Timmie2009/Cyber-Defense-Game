@@ -109,7 +109,7 @@ public partial class HostQuestionView : UserControl
     {
         try
         {
-            for (int seconds = 10; seconds > 0; seconds--)
+            for (int seconds = 30; seconds > 0; seconds--)
             {
                 if (token.IsCancellationRequested) return;
 

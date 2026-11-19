@@ -11,6 +11,7 @@ public partial class JoinView : UserControl
     public JoinView()
     {
         InitializeComponent();
+        NameInput.PointerPressed += (_, _) => NameInput.Focus();
     }
 
     public JoinView(MainView main) : this() => _main = main;

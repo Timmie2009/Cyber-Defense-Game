@@ -8,7 +8,7 @@ namespace Cyber_Defense_Game;
 
 public static class GameConnection
 {
-    public const string ClientVersion = "v1.0.8";
+    public const string ClientVersion = "v1.0.9";
 
     public static bool IsHost { get; set; }
     public static event Action? QuestionChanged;
