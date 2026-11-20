@@ -13,12 +13,13 @@
                TextWrapping="Wrap"
                TextAlignment="Center"
                HorizontalAlignment="Center" />
-    <TextBlock x:Name="TimerText"
-               Text="Time left: 10"
-               FontSize="28"
-               FontWeight="SemiBold"
-               Foreground="#E53935"
-               HorizontalAlignment="Center" />
+  <TextBlock x:Name="TimerText"
+           Text="Time left: 30"
+           FontSize="28"
+           FontWeight="SemiBold"
+           Foreground="#E53935"
+           HorizontalAlignment="Center" />
+
 </StackPanel>
 
         <!-- Hidden until timer reaches 0 -->

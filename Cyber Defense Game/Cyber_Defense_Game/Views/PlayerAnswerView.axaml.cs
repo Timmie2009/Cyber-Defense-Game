@@ -41,8 +41,8 @@ public partial class PlayerAnswerView : UserControl
         bool isCorrect = _hasAnswered && _selectedAnswerIndex == current.CorrectIndex;
 
         string resultAsset = isCorrect
-            ? "avares://Cyber_Defense_Game/Assets/Fout quizstickers.png"
-            : "avares://Cyber_Defense_Game/Assets/Goed quizstickers.png";
+            ? "avares://Cyber_Defense_Game/Assets/Goed%20quizstickers.png"
+            : "avares://Cyber_Defense_Game/Assets/Fout%20quizstickers.png";
 
         Avalonia.Threading.Dispatcher.UIThread.Post(() =>
         {
@@ -52,15 +52,15 @@ public partial class PlayerAnswerView : UserControl
                 SelectedImage.Source = new Bitmap(stream);
                 AnswerGrid.IsVisible = false;
                 SelectedImage.IsVisible = true;
+
+                StatusText.Text = isCorrect
+                    ? "Correct! 🎉"
+                    : _hasAnswered ? "Wrong! ❌" : "Time's up! ❌";
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Result image load failed: {ex}");
+                StatusText.Text = $"Image load failed: {ex.Message}";
             }
-
-            StatusText.Text = isCorrect
-                ? "Correct! 🎉"
-                : _hasAnswered ? "Wrong! ❌" : "Time's up! ❌";
         });
     }
 
