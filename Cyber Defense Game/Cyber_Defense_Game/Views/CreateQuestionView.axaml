@@ -35,6 +35,7 @@
                 <ComboBoxItem Content="Easy" />
                 <ComboBoxItem Content="Normal" />
                 <ComboBoxItem Content="Hard" />
+                <ComboBoxItem Content="Impossible" />
             </ComboBox>
 
             <TextBlock Text="Correct Answer:" FontWeight="SemiBold" />

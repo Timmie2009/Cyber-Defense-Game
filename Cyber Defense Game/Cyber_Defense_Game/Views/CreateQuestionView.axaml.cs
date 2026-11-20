@@ -69,6 +69,7 @@ public partial class CreateQuestionView : UserControl
         {
             "Easy" => 0,
             "Hard" => 2,
+            "Impossible" => 3,
             _ => 1
         };
 
