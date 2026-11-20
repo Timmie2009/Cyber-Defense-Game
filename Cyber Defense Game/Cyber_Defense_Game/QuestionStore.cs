@@ -43,8 +43,7 @@ public static class QuestionStore
         "CyberDefenseGame",
         "Questions");
 
-    private static readonly Dictionary<string, QuizQuestion> _questionsByName =
-        new(StringComparer.OrdinalIgnoreCase);
+    private static readonly List<QuizQuestion> _questions = new();
 
     public static string CurrentQuestionName { get; private set; } = "Sky Color";
     public static event Action? QuestionsChanged;
@@ -53,7 +52,7 @@ public static class QuestionStore
     static QuestionStore()
     {
         LoadLocalFiles();
-        if (_questionsByName.Count == 0)
+        if (_questions.Count == 0)
         {
             AddOrUpdateLocal(new QuizQuestion
             {
@@ -68,38 +67,19 @@ public static class QuestionStore
             });
         }
     }
-    public static void RemoveLocal(string questionName)
-    {
-        if (string.IsNullOrWhiteSpace(questionName)) return;
 
-        _questionsByName.Remove(questionName.Trim());
-        DeleteQuestionFile(questionName);
-        QuestionsChanged?.Invoke();
-    }
-
-    private static void DeleteQuestionFile(string title)
-    {
-        if (OperatingSystem.IsBrowser()) return;
-
-        try
-        {
-            var path = Path.Combine(QuestionsFolder, $"{GetSafeFileName(title)}.json");
-            if (File.Exists(path))
-            {
-                File.Delete(path);
-            }
-        }
-        catch { }
-    }
-
-    public static List<QuizQuestion> GetAll() => _questionsByName.Values.ToList();
+    public static List<QuizQuestion> GetAll() => _questions.ToList();
 
     public static QuizQuestion GetByName(string name)
     {
-        if (!string.IsNullOrWhiteSpace(name) && _questionsByName.TryGetValue(name, out var q))
-            return q;
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            var found = _questions.FirstOrDefault(q =>
+                string.Equals(q.Title, name.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (found != null) return found;
+        }
 
-        return _questionsByName.Values.First();
+        return _questions.First();
     }
 
     public static QuizQuestion GetCurrentQuestion() => GetByName(CurrentQuestionName);
@@ -114,8 +94,34 @@ public static class QuestionStore
     {
         if (string.IsNullOrWhiteSpace(question.Title)) return;
 
-        _questionsByName[question.Title.Trim()] = question;
+        string trimmedTitle = question.Title.Trim();
+        question.Title = trimmedTitle;
+
+        int existingIndex = _questions.FindIndex(q =>
+            string.Equals(q.Title, trimmedTitle, StringComparison.OrdinalIgnoreCase));
+
+        if (existingIndex >= 0)
+        {
+            // Keep its original position in the list when editing
+            _questions[existingIndex] = question;
+        }
+        else
+        {
+            // Append newly created questions to the bottom
+            _questions.Add(question);
+        }
+
         SaveQuestionFile(question);
+        QuestionsChanged?.Invoke();
+    }
+
+    public static void RemoveLocal(string questionName)
+    {
+        if (string.IsNullOrWhiteSpace(questionName)) return;
+
+        _questions.RemoveAll(q =>
+            string.Equals(q.Title, questionName.Trim(), StringComparison.OrdinalIgnoreCase));
+        DeleteQuestionFile(questionName);
         QuestionsChanged?.Invoke();
     }
 
@@ -140,6 +146,21 @@ public static class QuestionStore
         catch { }
     }
 
+    private static void DeleteQuestionFile(string title)
+    {
+        if (OperatingSystem.IsBrowser()) return;
+
+        try
+        {
+            var path = Path.Combine(QuestionsFolder, $"{GetSafeFileName(title)}.json");
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch { }
+    }
+
     private static void LoadLocalFiles()
     {
         if (OperatingSystem.IsBrowser()) return;
@@ -147,11 +168,15 @@ public static class QuestionStore
         try
         {
             if (!Directory.Exists(QuestionsFolder)) return;
-            foreach (var file in Directory.EnumerateFiles(QuestionsFolder, "*.json"))
+
+            var orderedFiles = Directory.EnumerateFiles(QuestionsFolder, "*.json")
+                .OrderBy(File.GetCreationTimeUtc);
+
+            foreach (var file in orderedFiles)
             {
                 var q = JsonSerializer.Deserialize<QuizQuestion>(File.ReadAllText(file));
                 if (q != null && !string.IsNullOrWhiteSpace(q.Title))
-                    _questionsByName[q.Title.Trim()] = q;
+                    _questions.Add(q);
             }
         }
         catch { }

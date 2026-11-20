@@ -85,7 +85,11 @@ public class GameHub : Hub
         {
             Directory.CreateDirectory(QuestionsFolder);
             var list = new List<QuizQuestion>();
-            foreach (var file in Directory.EnumerateFiles(QuestionsFolder, "*.json"))
+
+            var orderedFiles = Directory.EnumerateFiles(QuestionsFolder, "*.json")
+                .OrderBy(File.GetCreationTimeUtc);
+
+            foreach (var file in orderedFiles)
             {
                 try
                 {
@@ -97,6 +101,7 @@ public class GameHub : Hub
             return Task.FromResult(list);
         }
     }
+
 
     public async Task SaveQuestion(QuizQuestion question)
     {
