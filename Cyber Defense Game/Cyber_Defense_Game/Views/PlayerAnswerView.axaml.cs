@@ -11,6 +11,7 @@ public partial class PlayerAnswerView : UserControl
 {
     private readonly MainView? _main;
     private bool _hasAnswered;
+    private int _selectedAnswerIndex = -1;
 
     public PlayerAnswerView()
     {
@@ -26,10 +27,40 @@ public partial class PlayerAnswerView : UserControl
         Avalonia.Threading.Dispatcher.UIThread.Post(() =>
         {
             _hasAnswered = false;
+            _selectedAnswerIndex = -1;
             SelectedImage.IsVisible = false;
             SelectedImage.Source = null;
             AnswerGrid.IsVisible = true;
             StatusText.Text = $"[{q.Difficulty}] {q.Title} - Pick an answer!";
+        });
+    }
+
+    private void OnRoundEnded()
+    {
+        var current = QuestionStore.GetCurrentQuestion();
+        bool isCorrect = _hasAnswered && _selectedAnswerIndex == current.CorrectIndex;
+
+        string resultAsset = isCorrect
+            ? "avares://Cyber_Defense_Game/Assets/Fout quizstickers.png"
+            : "avares://Cyber_Defense_Game/Assets/Goed quizstickers.png";
+
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            try
+            {
+                using var stream = AssetLoader.Open(new Uri(resultAsset));
+                SelectedImage.Source = new Bitmap(stream);
+                AnswerGrid.IsVisible = false;
+                SelectedImage.IsVisible = true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Result image load failed: {ex}");
+            }
+
+            StatusText.Text = isCorrect
+                ? "Correct! 🎉"
+                : _hasAnswered ? "Wrong! ❌" : "Time's up! ❌";
         });
     }
 
@@ -40,6 +71,9 @@ public partial class PlayerAnswerView : UserControl
         QuestionStore.QuestionLoaded -= OnQuestionLoaded;
         QuestionStore.QuestionLoaded += OnQuestionLoaded;
 
+        GameConnection.RoundEnded -= OnRoundEnded;
+        GameConnection.RoundEnded += OnRoundEnded;
+
         var current = QuestionStore.GetCurrentQuestion();
         StatusText.Text = $"[{current.Difficulty}] {current.Title} - Pick an answer!";
     }
@@ -47,6 +81,7 @@ public partial class PlayerAnswerView : UserControl
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         QuestionStore.QuestionLoaded -= OnQuestionLoaded;
+        GameConnection.RoundEnded -= OnRoundEnded;
         base.OnDetachedFromVisualTree(e);
     }
 
@@ -66,6 +101,7 @@ public partial class PlayerAnswerView : UserControl
     {
         if (_hasAnswered) return;
         _hasAnswered = true;
+        _selectedAnswerIndex = index;
 
         try
         {
@@ -81,6 +117,7 @@ public partial class PlayerAnswerView : UserControl
         catch (Exception ex)
         {
             _hasAnswered = false;
+            _selectedAnswerIndex = -1;
             StatusText.Text = $"Error: {ex.Message}";
         }
     }

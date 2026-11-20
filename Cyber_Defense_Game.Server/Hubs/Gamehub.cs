@@ -142,4 +142,9 @@ public class GameHub : Hub
 
     private static List<string> GetPlayerList() => Players.Values.ToList();
     private Task BroadcastPlayers() => Clients.All.SendAsync("PlayersUpdated", GetPlayerList());
+
+    public async Task EndRound()
+    {
+        await Clients.All.SendAsync("RoundEnded");
+    }
 }

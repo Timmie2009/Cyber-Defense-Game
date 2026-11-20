@@ -15,6 +15,7 @@ public partial class HostQuestionView : UserControl
     private readonly Dictionary<string, (string Name, int AnswerIndex)> _playerAnswers = new();
     private CancellationTokenSource? _timerCts;
     private bool _timeUp;
+    private bool _allAnsweredEarly;
     private int _questionIndex = 0;
     private QuizQuestion _currentQuestion = QuestionStore.GetCurrentQuestion();
 
@@ -29,9 +30,28 @@ public partial class HostQuestionView : UserControl
     {
         if (_timeUp) return;
 
+        bool everyoneAnswered = false;
+
         lock (_playerAnswers)
         {
             _playerAnswers[connectionId] = (name, answerIndex);
+
+            int totalPlayers = GameConnection.CurrentPlayers.Count;
+            if (totalPlayers > 0 && _playerAnswers.Count >= totalPlayers)
+            {
+                everyoneAnswered = true;
+            }
+        }
+
+        if (everyoneAnswered)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                if (_timeUp) return;
+                _allAnsweredEarly = true;
+                _timerCts?.Cancel();
+                FinishRound("Everyone answered!");
+            });
         }
     }
 
@@ -65,7 +85,16 @@ public partial class HostQuestionView : UserControl
     {
         _currentQuestion = QuestionStore.GetCurrentQuestion();
 
-        QuestionTitleText.Text = $"[{_currentQuestion.Difficulty}] {_currentQuestion.QuestionText}";
+        string fullQuestionText = $"[{_currentQuestion.Difficulty}] {_currentQuestion.QuestionText}";
+        QuestionTitleText.Text = fullQuestionText;
+        QuestionTitleText.FontSize = fullQuestionText.Length switch
+        {
+            > 120 => 20,
+            > 80 => 24,
+            > 50 => 30,
+            _ => 36
+        };
+
         OptionAText.Text = $"A: {_currentQuestion.OptionA}";
         OptionBText.Text = $"B: {_currentQuestion.OptionB}";
         OptionCText.Text = $"C: {_currentQuestion.OptionC}";
@@ -77,6 +106,7 @@ public partial class HostQuestionView : UserControl
         }
 
         _timeUp = false;
+        _allAnsweredEarly = false;
         ResultsPanel.IsVisible = false;
         AnswersList.ItemsSource = null;
 
@@ -109,7 +139,7 @@ public partial class HostQuestionView : UserControl
     {
         try
         {
-            for (int seconds = 30; seconds > 0; seconds--)
+            for (int seconds = 10; seconds > 0; seconds--)
             {
                 if (token.IsCancellationRequested) return;
 
@@ -119,26 +149,43 @@ public partial class HostQuestionView : UserControl
 
             if (token.IsCancellationRequested) return;
 
-            _timeUp = true;
-            string[] options =
-            {
-                $"A ({_currentQuestion.OptionA})",
-                $"B ({_currentQuestion.OptionB})",
-                $"C ({_currentQuestion.OptionC})",
-                $"D ({_currentQuestion.OptionD})"
-            };
-            string correctLabel = _currentQuestion.CorrectIndex >= 0 && _currentQuestion.CorrectIndex < options.Length
-                ? options[_currentQuestion.CorrectIndex]
-                : "Unknown";
-
-            TimerText.Text = $"Time's up! Correct answer: {correctLabel}";
-            RevealResults();
+            FinishRound("Time's up!");
         }
         catch (TaskCanceledException)
         {
-            // Expected when moving to the next round or leaving the screen
+            // Expected when everyone answers early, moving to next round, or leaving the screen
         }
     }
+
+    private async void FinishRound(string reason)
+    {
+        if (_timeUp) return;
+        _timeUp = true;
+
+        try
+        {
+            await GameConnection.EndRoundAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"EndRound failed: {ex}");
+        }
+
+        string[] options =
+        {
+        $"A ({_currentQuestion.OptionA})",
+        $"B ({_currentQuestion.OptionB})",
+        $"C ({_currentQuestion.OptionC})",
+        $"D ({_currentQuestion.OptionD})"
+    };
+        string correctLabel = _currentQuestion.CorrectIndex >= 0 && _currentQuestion.CorrectIndex < options.Length
+            ? options[_currentQuestion.CorrectIndex]
+            : "Unknown";
+
+        TimerText.Text = $"{reason} Correct answer: {correctLabel}";
+        RevealResults();
+    }
+
 
     private void RevealResults()
     {

@@ -16,6 +16,8 @@ public static class GameConnection
     private static HubConnection? _connection;
     private static Task? _connectTask;
 
+    public static event Action? RoundEnded;
+
     public static List<string> CurrentPlayers { get; private set; } = new();
     public static event Action? GameStarted;
 
@@ -122,5 +124,9 @@ public static class GameConnection
         _connection?.InvokeAsync("LoadQuestion", questionName) ?? Task.CompletedTask;
     public static Task DeleteQuestionAsync(string questionName) =>
     _connection?.InvokeAsync("DeleteQuestion", questionName) ?? Task.CompletedTask;
+
+    public static Task EndRoundAsync() =>
+    _connection?.InvokeAsync("EndRound") ?? Task.CompletedTask;
+
 
 }
