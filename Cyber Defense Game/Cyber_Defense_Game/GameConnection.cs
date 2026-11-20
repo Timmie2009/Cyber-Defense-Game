@@ -67,14 +67,14 @@ public static class GameConnection
                 QuestionStore.SetActiveQuestion(questionName);
             });
 
-            await _connection.StartAsync();
-
-            // Inside ConnectInternalAsync:
             _connection.On<string>("QuestionDeleted", questionName =>
             {
                 QuestionStore.RemoveLocal(questionName);
             });
 
+            _connection.On("RoundEnded", () => RoundEnded?.Invoke());
+
+            await _connection.StartAsync();
 
             try
             {
@@ -108,7 +108,7 @@ public static class GameConnection
     public static Task SubmitAnswerAsync(int answer) =>
         _connection?.InvokeAsync("SubmitAnswer", answer) ?? Task.CompletedTask;
 
-    public static Task ChangeImageAsync(int imageNumber) => 
+    public static Task ChangeImageAsync(int imageNumber) =>
         _connection?.InvokeAsync("ChangeImage", imageNumber) ?? Task.CompletedTask;
 
     public static Task StartGameAsync() =>
@@ -122,11 +122,10 @@ public static class GameConnection
 
     public static Task LoadQuestionAsync(string questionName) =>
         _connection?.InvokeAsync("LoadQuestion", questionName) ?? Task.CompletedTask;
+
     public static Task DeleteQuestionAsync(string questionName) =>
-    _connection?.InvokeAsync("DeleteQuestion", questionName) ?? Task.CompletedTask;
+        _connection?.InvokeAsync("DeleteQuestion", questionName) ?? Task.CompletedTask;
 
     public static Task EndRoundAsync() =>
-    _connection?.InvokeAsync("EndRound") ?? Task.CompletedTask;
-
-
+        _connection?.InvokeAsync("EndRound") ?? Task.CompletedTask;
 }
