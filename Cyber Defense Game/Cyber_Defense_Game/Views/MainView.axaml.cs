@@ -125,17 +125,18 @@ public static partial class BrowserMusic
     }
 
     [SupportedOSPlatform("browser")]
-    [JSImport("playHostMusic", "main")]
+    [JSImport("globalThis.playHostMusic")]
     private static partial void Play();
 
     [SupportedOSPlatform("browser")]
-    [JSImport("playDifficultyMusic", "main")]
+    [JSImport("globalThis.playDifficultyMusic")]
     private static partial void PlayDifficulty(string difficulty);
 
     [SupportedOSPlatform("browser")]
-    [JSImport("stopHostMusic", "main")]
+    [JSImport("globalThis.stopHostMusic")]
     private static partial void Stop();
 }
+
 
 public static partial class BrowserInput
 {
