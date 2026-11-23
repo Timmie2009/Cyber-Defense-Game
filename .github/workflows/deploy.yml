@@ -96,5 +96,8 @@ jobs:
           rm -rf /root/game/deploy-temp
           chmod -R 755 /root/game/server
 
-      - name: 4. Start of herstart alle containers op de Pi
-        run: docker compose -f /root/game/docker-compose.yml up -d --force-recreate website server
+      - name: 4. Herstart de C# game-server op de Pi
+        run: docker compose -f /root/game/docker-compose.yml up -d --force-recreate server
+
+      - name: 5. Synchroniseer website naar GNS3 cloud-server (student)
+        run: rsync -avz --delete /root/game/wwwroot/ student@100.91.10.1:/root/game/wwwroot/
