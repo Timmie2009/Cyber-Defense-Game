@@ -19,6 +19,11 @@
            FontWeight="SemiBold"
            Foreground="#E53935"
            HorizontalAlignment="Center" />
+          <TextBlock x:Name="AnsweredCountText"
+               Text="Answered: 0 / 0"
+               FontSize="22"
+               FontWeight="SemiBold"
+               HorizontalAlignment="Center" />
 
 </StackPanel>
 

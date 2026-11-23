@@ -42,6 +42,8 @@ public partial class HostQuestionView : UserControl
             }
         }
 
+        UpdateAnsweredCount();
+
         if (everyoneAnswered)
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -53,12 +55,17 @@ public partial class HostQuestionView : UserControl
         }
     }
 
+    private void OnPlayersUpdated(List<string> _) => UpdateAnsweredCount();
+
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
 
         GameConnection.AnswerReceived -= OnAnswerReceived;
         GameConnection.AnswerReceived += OnAnswerReceived;
+
+        GameConnection.PlayersUpdated -= OnPlayersUpdated;
+        GameConnection.PlayersUpdated += OnPlayersUpdated;
 
         _questionIndex = 0;
         var all = QuestionStore.GetAll();
@@ -89,6 +96,7 @@ public partial class HostQuestionView : UserControl
         _timerCts?.Cancel();
         BrowserMusic.StopSafe();
         GameConnection.AnswerReceived -= OnAnswerReceived;
+        GameConnection.PlayersUpdated -= OnPlayersUpdated;
         base.OnDetachedFromVisualTree(e);
     }
 
@@ -124,6 +132,8 @@ public partial class HostQuestionView : UserControl
         {
             _playerAnswers.Clear();
         }
+
+        UpdateAnsweredCount();
 
         _timeUp = false;
         ResultsPanel.IsVisible = false;
@@ -174,6 +184,20 @@ public partial class HostQuestionView : UserControl
         {
             // Expected when everyone answers early, moving to next round, or leaving the screen
         }
+    }
+
+    private void UpdateAnsweredCount()
+    {
+        int answered;
+        lock (_playerAnswers)
+        {
+            answered = _playerAnswers.Count;
+        }
+
+        int total = GameConnection.CurrentPlayers.Count;
+
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            AnsweredCountText.Text = $"Answered: {answered} / {total}");
     }
 
     private async void FinishRound(string reason)
