@@ -68,10 +68,22 @@ public partial class HostQuestionView : UserControl
         {
             string firstName = all[0].Title;
             QuestionStore.SetActiveQuestion(firstName);
-            _ = GameConnection.LoadQuestionAsync(firstName);
+            _ = SafeLoadQuestionAsync(firstName);
         }
 
         StartRound();
+    }
+
+    private async Task SafeLoadQuestionAsync(string questionName)
+    {
+        try
+        {
+            await GameConnection.LoadQuestionAsync(questionName);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"LoadQuestion warning: {ex.Message}");
+        }
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -86,7 +98,14 @@ public partial class HostQuestionView : UserControl
     {
         _currentQuestion = QuestionStore.GetCurrentQuestion();
 
-        BrowserMusic.PlayDifficultySafe(_currentQuestion.Difficulty);
+        try
+        {
+            BrowserMusic.PlayDifficultySafe(_currentQuestion.Difficulty);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Music warning: {ex.Message}");
+        }
 
         string fullQuestionText = $"[{_currentQuestion.Difficulty}] {_currentQuestion.QuestionText}";
         QuestionTitleText.Text = fullQuestionText;
@@ -193,11 +212,11 @@ public partial class HostQuestionView : UserControl
     {
         string[] colorLabels =
         {
-        $"Red (A: {_currentQuestion.OptionA})",
-        $"Green (B: {_currentQuestion.OptionB})",
-        $"Blue (C: {_currentQuestion.OptionC})",
-        $"White (D: {_currentQuestion.OptionD})"
-    };
+            $"Red (A: {_currentQuestion.OptionA})",
+            $"Green (B: {_currentQuestion.OptionB})",
+            $"Blue (C: {_currentQuestion.OptionC})",
+            $"White (D: {_currentQuestion.OptionD})"
+        };
 
         int[] counts = new int[4];
         int totalVotes = 0;
@@ -229,4 +248,3 @@ public partial class HostQuestionView : UserControl
         ResultsPanel.IsVisible = true;
     }
 }
-
