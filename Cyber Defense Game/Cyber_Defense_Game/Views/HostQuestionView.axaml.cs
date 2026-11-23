@@ -15,7 +15,6 @@ public partial class HostQuestionView : UserControl
     private readonly Dictionary<string, (string Name, int AnswerIndex)> _playerAnswers = new();
     private CancellationTokenSource? _timerCts;
     private bool _timeUp;
-    private bool _allAnsweredEarly;
     private int _questionIndex = 0;
     private QuizQuestion _currentQuestion = QuestionStore.GetCurrentQuestion();
 
@@ -48,7 +47,6 @@ public partial class HostQuestionView : UserControl
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 if (_timeUp) return;
-                _allAnsweredEarly = true;
                 _timerCts?.Cancel();
                 FinishRound("Everyone answered!");
             });
@@ -128,7 +126,6 @@ public partial class HostQuestionView : UserControl
         }
 
         _timeUp = false;
-        _allAnsweredEarly = false;
         ResultsPanel.IsVisible = false;
         AnswersList.ItemsSource = null;
 

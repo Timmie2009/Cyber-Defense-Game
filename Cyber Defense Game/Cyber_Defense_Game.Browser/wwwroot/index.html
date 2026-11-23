@@ -34,17 +34,25 @@
     <script>
                 // @ts-nocheck
                 window.currentQuizAudio = null;
+                window.currentTrackSrc = "";
 
                 window.playQuizTrack = function (src) {
-                    console.log("Playing track:", src);
+                    // Do not restart if the exact same track is already playing
+                    if (window.currentTrackSrc === src && window.currentQuizAudio && !window.currentQuizAudio.paused) {
+                        return;
+                    }
+
+                    console.log("Switching track to:", src);
                     window.stopHostMusic();
+                    window.currentTrackSrc = src;
                     window.currentQuizAudio = new Audio(src);
                     window.currentQuizAudio.loop = true;
                     window.currentQuizAudio.play().catch(err => console.warn("Audio blocked:", err));
                 };
 
                 window.playHostMusic = function () {
-                    window.playQuizTrack('./audio/easy.mp3');
+                    // Change './audio/lobby.mp3' if your teammate used a different lobby filename
+                    window.playQuizTrack('./audio/lobby.mp3');
                 };
 
                 window.playDifficultyMusic = function (difficulty) {
@@ -64,6 +72,7 @@
                         window.currentQuizAudio.currentTime = 0;
                         window.currentQuizAudio = null;
                     }
+                    window.currentTrackSrc = "";
                 };
     </script>
 </body>
