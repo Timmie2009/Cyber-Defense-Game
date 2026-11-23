@@ -108,6 +108,14 @@ public static partial class BrowserMusic
         }
     }
 
+    public static void PlayDifficultySafe(string difficulty)
+    {
+        if (OperatingSystem.IsBrowser())
+        {
+            PlayDifficulty(difficulty);
+        }
+    }
+
     public static void StopSafe()
     {
         if (OperatingSystem.IsBrowser())
@@ -119,6 +127,10 @@ public static partial class BrowserMusic
     [SupportedOSPlatform("browser")]
     [JSImport("playHostMusic", "main")]
     private static partial void Play();
+
+    [SupportedOSPlatform("browser")]
+    [JSImport("playDifficultyMusic", "main")]
+    private static partial void PlayDifficulty(string difficulty);
 
     [SupportedOSPlatform("browser")]
     [JSImport("stopHostMusic", "main")]

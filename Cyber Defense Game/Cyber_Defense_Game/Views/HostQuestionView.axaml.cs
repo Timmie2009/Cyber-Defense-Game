@@ -77,6 +77,7 @@ public partial class HostQuestionView : UserControl
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _timerCts?.Cancel();
+        BrowserMusic.StopSafe();
         GameConnection.AnswerReceived -= OnAnswerReceived;
         base.OnDetachedFromVisualTree(e);
     }
@@ -84,6 +85,8 @@ public partial class HostQuestionView : UserControl
     private void StartRound()
     {
         _currentQuestion = QuestionStore.GetCurrentQuestion();
+
+        BrowserMusic.PlayDifficultySafe(_currentQuestion.Difficulty);
 
         string fullQuestionText = $"[{_currentQuestion.Difficulty}] {_currentQuestion.QuestionText}";
         QuestionTitleText.Text = fullQuestionText;
@@ -162,66 +165,68 @@ public partial class HostQuestionView : UserControl
         if (_timeUp) return;
         _timeUp = true;
 
-        try
-        {
-            await GameConnection.EndRoundAsync();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"EndRound failed: {ex}");
-        }
-
         string[] options =
         {
-        $"A ({_currentQuestion.OptionA})",
-        $"B ({_currentQuestion.OptionB})",
-        $"C ({_currentQuestion.OptionC})",
-        $"D ({_currentQuestion.OptionD})"
-    };
+            $"A ({_currentQuestion.OptionA})",
+            $"B ({_currentQuestion.OptionB})",
+            $"C ({_currentQuestion.OptionC})",
+            $"D ({_currentQuestion.OptionD})"
+        };
         string correctLabel = _currentQuestion.CorrectIndex >= 0 && _currentQuestion.CorrectIndex < options.Length
             ? options[_currentQuestion.CorrectIndex]
             : "Unknown";
 
         TimerText.Text = $"{reason} Correct answer: {correctLabel}";
         RevealResults();
-    }
 
+        try
+        {
+            await GameConnection.EndRoundAsync();
+        }
+        catch (Exception ex)
+        {
+            TimerText.Text = $"EndRound error: {ex.Message}";
+        }
+    }
 
     private void RevealResults()
     {
-        string[] options =
+        string[] colorLabels =
         {
-            $"A: {_currentQuestion.OptionA}",
-            $"B: {_currentQuestion.OptionB}",
-            $"C: {_currentQuestion.OptionC}",
-            $"D: {_currentQuestion.OptionD}"
-        };
-        List<string> results = new();
+        $"Red (A: {_currentQuestion.OptionA})",
+        $"Green (B: {_currentQuestion.OptionB})",
+        $"Blue (C: {_currentQuestion.OptionC})",
+        $"White (D: {_currentQuestion.OptionD})"
+    };
+
+        int[] counts = new int[4];
+        int totalVotes = 0;
 
         lock (_playerAnswers)
         {
-            foreach (var playerName in GameConnection.CurrentPlayers)
+            foreach (var entry in _playerAnswers.Values)
             {
-                var entry = _playerAnswers.Values.FirstOrDefault(a => a.Name == playerName);
-
-                if (string.IsNullOrEmpty(entry.Name))
+                if (entry.AnswerIndex >= 0 && entry.AnswerIndex < 4)
                 {
-                    results.Add($"{playerName}: No answer (❌ Wrong)");
-                }
-                else
-                {
-                    string chosen = entry.AnswerIndex >= 0 && entry.AnswerIndex < options.Length
-                        ? options[entry.AnswerIndex]
-                        : "Unknown";
-                    bool isRight = entry.AnswerIndex == _currentQuestion.CorrectIndex;
-                    string status = isRight ? "✅ Right" : "❌ Wrong";
-
-                    results.Add($"{entry.Name}: {chosen} ({status})");
+                    counts[entry.AnswerIndex]++;
+                    totalVotes++;
                 }
             }
+        }
+
+        List<string> results = new();
+        for (int i = 0; i < 4; i++)
+        {
+            double percentage = totalVotes > 0
+                ? Math.Round((double)counts[i] / totalVotes * 100, 1)
+                : 0;
+
+            string correctTag = i == _currentQuestion.CorrectIndex ? " ✅ (Correct)" : "";
+            results.Add($"{colorLabels[i]}: {percentage}% ({counts[i]} votes){correctTag}");
         }
 
         AnswersList.ItemsSource = results;
         ResultsPanel.IsVisible = true;
     }
 }
+
