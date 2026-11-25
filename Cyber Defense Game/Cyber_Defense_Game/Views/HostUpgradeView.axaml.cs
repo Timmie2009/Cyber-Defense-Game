@@ -147,6 +147,8 @@ public partial class HostUpgradeView : UserControl
                 ? UpgradeStore.Option1
                 : (Random.Shared.Next(2) == 0 ? UpgradeStore.Option1 : UpgradeStore.Option2);
 
+        UpgradeStore.ApplyWinningUpgrade(winner);
+
         TimerText.Text = reason;
         WinnerText.Text = $"Selected Upgrade: {winner.Name}!";
         ResultPanel.IsVisible = true;

@@ -90,9 +90,7 @@ public partial class MainView : UserControl
     public void ShowMenu()
     {
         BrowserMusic.StopSafe();
-        UpgradeStore.QuestionsPlayed = 0;
-        UpgradeStore.QuestionIndex = 0;
-        UpgradeStore.TeamScore = 0;
+        UpgradeStore.ResetGame();
 
         var menu = new MenuView();
 

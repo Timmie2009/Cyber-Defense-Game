@@ -7,7 +7,7 @@ namespace Cyber_Defense_Game;
 
 public static class GameConnection
 {
-    public const string ClientVersion = "v1.1.0";
+    public const string ClientVersion = "v1.2.0";
 
     public static bool IsHost { get; set; }
     public static event Action? QuestionChanged;
@@ -17,6 +17,7 @@ public static class GameConnection
 
     public static event Action? RoundEnded;
     public static event Action<string, string, int>? UpgradeVoteReceived;
+    public static event Action<int>? OptionEliminated;
 
     public static List<string> CurrentPlayers { get; private set; } = new();
     public static event Action? GameStarted;
@@ -81,11 +82,15 @@ public static class GameConnection
             _connection.On<string, string, int>("UpgradeVoteReceived",
                 (id, name, choice) => UpgradeVoteReceived?.Invoke(id, name, choice));
 
+            _connection.On<int>("OptionEliminated", wrongIndex =>
+            {
+                OptionEliminated?.Invoke(wrongIndex);
+            });
+
             await _connection.StartAsync();
 
             try
             {
-                // Sync all saved <QuestionName>.json files from the server into local storage
                 var serverQuestions = await _connection.InvokeAsync<List<QuizQuestion>>("GetAllQuestions");
                 if (serverQuestions != null)
                 {
@@ -141,4 +146,7 @@ public static class GameConnection
 
     public static Task SubmitUpgradeVoteAsync(int choiceIndex) =>
         _connection?.InvokeAsync("SubmitUpgradeVote", choiceIndex) ?? Task.CompletedTask;
+
+    public static Task EliminateOptionAsync(int wrongIndex) =>
+        _connection?.InvokeAsync("EliminateOption", wrongIndex) ?? Task.CompletedTask;
 }

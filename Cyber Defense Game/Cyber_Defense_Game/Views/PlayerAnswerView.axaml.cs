@@ -20,6 +20,16 @@ public partial class PlayerAnswerView : UserControl
 
     public PlayerAnswerView(MainView main) : this() => _main = main;
 
+    private void ResetButtons()
+    {
+        Button[] buttons = { RedButton, GreenButton, BlueButton, WhiteButton };
+        foreach (var btn in buttons)
+        {
+            btn.IsEnabled = true;
+            btn.Opacity = 1.0;
+        }
+    }
+
     private void OnQuestionLoaded(string questionName)
     {
         var q = QuestionStore.GetByName(questionName);
@@ -30,8 +40,23 @@ public partial class PlayerAnswerView : UserControl
             _selectedAnswerIndex = -1;
             SelectedImage.IsVisible = false;
             SelectedImage.Source = null;
+            ResetButtons();
             AnswerGrid.IsVisible = true;
             StatusText.Text = $"[{q.Difficulty}] {q.Title} - Pick an answer!";
+        });
+    }
+
+    private void OnOptionEliminated(int wrongIndex)
+    {
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            Button[] buttons = { RedButton, GreenButton, BlueButton, WhiteButton };
+            if (wrongIndex >= 0 && wrongIndex < buttons.Length)
+            {
+                buttons[wrongIndex].IsEnabled = false;
+                buttons[wrongIndex].Opacity = 0.2;
+                StatusText.Text = "Threat Scanner removed 1 wrong answer!";
+            }
         });
     }
 
@@ -71,9 +96,13 @@ public partial class PlayerAnswerView : UserControl
         QuestionStore.QuestionLoaded -= OnQuestionLoaded;
         QuestionStore.QuestionLoaded += OnQuestionLoaded;
 
+        GameConnection.OptionEliminated -= OnOptionEliminated;
+        GameConnection.OptionEliminated += OnOptionEliminated;
+
         GameConnection.RoundEnded -= OnRoundEnded;
         GameConnection.RoundEnded += OnRoundEnded;
 
+        ResetButtons();
         var current = QuestionStore.GetCurrentQuestion();
         StatusText.Text = $"[{current.Difficulty}] {current.Title} - Pick an answer!";
     }
@@ -81,6 +110,7 @@ public partial class PlayerAnswerView : UserControl
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         QuestionStore.QuestionLoaded -= OnQuestionLoaded;
+        GameConnection.OptionEliminated -= OnOptionEliminated;
         GameConnection.RoundEnded -= OnRoundEnded;
         base.OnDetachedFromVisualTree(e);
     }

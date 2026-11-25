@@ -3,8 +3,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              x:Class="Cyber_Defense_Game.Views.HostQuestionView">
-    <DockPanel Margin="30">
-        <!-- Top Header with Score on Top-Left & Question Centered -->
+        <DockPanel Margin="30">
+        <!-- Top Header with Score, Lives & Active Buff on Top-Left -->
         <Grid DockPanel.Dock="Top" Margin="10,10,10,20">
             <Border Background="#1B263B"
                     BorderBrush="#415A77"
@@ -13,14 +13,27 @@
                     Padding="16,10"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top">
-                <TextBlock x:Name="ScoreText"
-                           Text="Score: 0 / 100"
-                           FontSize="24"
-                           FontWeight="Bold"
-                           Foreground="#4CAF50" />
+                <StackPanel Spacing="4">
+                    <TextBlock x:Name="ScoreText"
+                               Text="Score: 0"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="#4CAF50" />
+                    <TextBlock x:Name="LivesText"
+                               Text="Lives: ?????? (3/3)"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="#FF5252" />
+                    <TextBlock x:Name="ActiveBuffText"
+                               Text=""
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Foreground="#FFD54F"
+                               IsVisible="False" />
+                </StackPanel>
             </Border>
 
-            <StackPanel Spacing="10" Margin="200,0,200,0">
+            <StackPanel Spacing="10" Margin="240,0,240,0">
                 <TextBlock x:Name="QuestionTitleText"
                            Text="What color is the sky?"
                            FontSize="36"
@@ -61,7 +74,7 @@
 
         <!-- 4 answer previews on the host screen -->
         <UniformGrid Rows="2" Columns="2" Margin="20">
-            <Border Background="#E53935" CornerRadius="12" Margin="10">
+            <Border x:Name="OptionABorder" Background="#E53935" CornerRadius="12" Margin="10">
                 <TextBlock x:Name="OptionAText"
                            Text="A: Red"
                            Foreground="White"
@@ -71,7 +84,7 @@
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center" />
             </Border>
-            <Border Background="#43A047" CornerRadius="12" Margin="10">
+            <Border x:Name="OptionBBorder" Background="#43A047" CornerRadius="12" Margin="10">
                 <TextBlock x:Name="OptionBText"
                            Text="B: Green"
                            Foreground="White"
@@ -81,7 +94,7 @@
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center" />
             </Border>
-            <Border Background="#1E88E5" CornerRadius="12" Margin="10">
+            <Border x:Name="OptionCBorder" Background="#1E88E5" CornerRadius="12" Margin="10">
                 <TextBlock x:Name="OptionCText"
                            Text="C: Blue"
                            Foreground="White"
@@ -91,7 +104,7 @@
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center" />
             </Border>
-            <Border Background="#F5F5F5" CornerRadius="12" Margin="10">
+            <Border x:Name="OptionDBorder" Background="#F5F5F5" CornerRadius="12" Margin="10">
                 <TextBlock x:Name="OptionDText"
                            Text="D: White"
                            Foreground="Black"

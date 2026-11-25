@@ -22,8 +22,24 @@ public static class UpgradeStore
     public static int QuestionsPlayed { get; set; } = 0;
     public static int QuestionIndex { get; set; } = 0;
     public static int TeamScore { get; set; } = 0;
+    public static int TeamLives { get; set; } = 3;
+
+    public static int ExtraTimeRoundsLeft { get; set; } = 0;
+    public static bool ThreatScannerActive { get; set; } = false;
+    public static bool OverclockActive { get; set; } = false;
 
     public static event Action? UpgradePhaseStarted;
+
+    public static void ResetGame()
+    {
+        QuestionsPlayed = 0;
+        QuestionIndex = 0;
+        TeamScore = 0;
+        TeamLives = 3;
+        ExtraTimeRoundsLeft = 0;
+        ThreatScannerActive = false;
+        OverclockActive = false;
+    }
 
     public static (int FirstId, int SecondId) PickTwoRandom()
     {
@@ -37,5 +53,24 @@ public static class UpgradeStore
         Option1 = AllUpgrades.FirstOrDefault(u => u.Id == firstId) ?? AllUpgrades[0];
         Option2 = AllUpgrades.FirstOrDefault(u => u.Id == secondId) ?? AllUpgrades[1];
         UpgradePhaseStarted?.Invoke();
+    }
+
+    public static void ApplyWinningUpgrade(UpgradeOption winner)
+    {
+        switch (winner.Id)
+        {
+            case 0: // Patch Upgrade
+                TeamLives = Math.Min(3, TeamLives + 1);
+                break;
+            case 1: // Extra Time (next 5 questions)
+                ExtraTimeRoundsLeft = 5;
+                break;
+            case 2: // Threat Scanner (next question)
+                ThreatScannerActive = true;
+                break;
+            case 3: // Overclock (next question)
+                OverclockActive = true;
+                break;
+        }
     }
 }

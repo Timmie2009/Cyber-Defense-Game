@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -15,6 +16,7 @@ public partial class HostQuestionView : UserControl
     private readonly Dictionary<string, (string Name, int AnswerIndex)> _playerAnswers = new();
     private CancellationTokenSource? _timerCts;
     private bool _timeUp;
+    private bool _roundOverclockActive;
     private QuizQuestion _currentQuestion = QuestionStore.GetCurrentQuestion();
 
     public HostQuestionView()
@@ -101,11 +103,49 @@ public partial class HostQuestionView : UserControl
         base.OnDetachedFromVisualTree(e);
     }
 
-    private void StartRound()
+    private void UpdateStatusBadge()
+    {
+        ScoreText.Text = $"Score: {UpgradeStore.TeamScore}";
+        string hearts = new string('❤', Math.Max(0, UpgradeStore.TeamLives));
+        LivesText.Text = $"Lives: {hearts} ({UpgradeStore.TeamLives}/3)";
+
+        List<string> buffs = new();
+        if (UpgradeStore.ExtraTimeRoundsLeft > 0)
+            buffs.Add($"⏱ Extra Time ({UpgradeStore.ExtraTimeRoundsLeft} left)");
+        if (_roundOverclockActive)
+            buffs.Add("⚡ Overclock (2x Points)");
+        if (UpgradeStore.ThreatScannerActive)
+            buffs.Add("🔍 Threat Scanner");
+
+        if (buffs.Count > 0)
+        {
+            ActiveBuffText.Text = string.Join(" | ", buffs);
+            ActiveBuffText.IsVisible = true;
+        }
+        else
+        {
+            ActiveBuffText.IsVisible = false;
+        }
+    }
+
+    private async void StartRound()
     {
         _currentQuestion = QuestionStore.GetCurrentQuestion();
 
-        ScoreText.Text = $"Score: {UpgradeStore.TeamScore} / 100";
+        _roundOverclockActive = UpgradeStore.OverclockActive;
+        UpgradeStore.OverclockActive = false;
+
+        bool useThreatScanner = UpgradeStore.ThreatScannerActive;
+        UpgradeStore.ThreatScannerActive = false;
+
+        int roundSeconds = 30;
+        if (UpgradeStore.ExtraTimeRoundsLeft > 0)
+        {
+            roundSeconds = 45;
+            UpgradeStore.ExtraTimeRoundsLeft--;
+        }
+
+        UpdateStatusBadge();
 
         try
         {
@@ -126,10 +166,35 @@ public partial class HostQuestionView : UserControl
             _ => 36
         };
 
+        Border[] borders = { OptionABorder, OptionBBorder, OptionCBorder, OptionDBorder };
+        foreach (var b in borders) b.Opacity = 1.0;
+
         OptionAText.Text = $"A: {_currentQuestion.OptionA}";
         OptionBText.Text = $"B: {_currentQuestion.OptionB}";
         OptionCText.Text = $"C: {_currentQuestion.OptionC}";
         OptionDText.Text = $"D: {_currentQuestion.OptionD}";
+
+        if (useThreatScanner)
+        {
+            var wrongIndices = Enumerable.Range(0, 4)
+                .Where(i => i != _currentQuestion.CorrectIndex)
+                .ToList();
+
+            int eliminated = wrongIndices[Random.Shared.Next(wrongIndices.Count)];
+            borders[eliminated].Opacity = 0.25;
+
+            TextBlock[] texts = { OptionAText, OptionBText, OptionCText, OptionDText };
+            texts[eliminated].Text += " (ELIMINATED)";
+
+            try
+            {
+                await GameConnection.EliminateOptionAsync(eliminated);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"EliminateOption warning: {ex.Message}");
+            }
+        }
 
         lock (_playerAnswers)
         {
@@ -144,7 +209,7 @@ public partial class HostQuestionView : UserControl
 
         _timerCts?.Cancel();
         _timerCts = new CancellationTokenSource();
-        _ = RunCountdownAsync(_timerCts.Token);
+        _ = RunCountdownAsync(roundSeconds, _timerCts.Token);
     }
 
     private async void NextQuestion_Click(object? sender, RoutedEventArgs e)
@@ -175,11 +240,11 @@ public partial class HostQuestionView : UserControl
         }
     }
 
-    private async Task RunCountdownAsync(CancellationToken token)
+    private async Task RunCountdownAsync(int startSeconds, CancellationToken token)
     {
         try
         {
-            for (int seconds = 30; seconds > 0; seconds--)
+            for (int seconds = startSeconds; seconds > 0; seconds--)
             {
                 if (token.IsCancellationRequested) return;
 
@@ -191,10 +256,7 @@ public partial class HostQuestionView : UserControl
 
             FinishRound("Time's up!");
         }
-        catch (TaskCanceledException)
-        {
-            // Expected when everyone answers early, moving to next round, or leaving the screen
-        }
+        catch (TaskCanceledException) { }
     }
 
     private void UpdateAnsweredCount()
@@ -270,27 +332,32 @@ public partial class HostQuestionView : UserControl
             : totalVotes;
 
         int correctVotes = _currentQuestion.CorrectIndex >= 0 && _currentQuestion.CorrectIndex < 4
-            ? counts[_currentQuestion.CorrectIndex]
-            : 0;
 
+? counts[_currentQuestion.CorrectIndex]
+: 0;
         int roundScore = totalPlayers > 0
-            ? (int)Math.Round((double)correctVotes / totalPlayers * 100)
-            : 0;
-
-        UpgradeStore.TeamScore = Math.Clamp(roundScore, 0, 100);
-        ScoreText.Text = $"Score: {UpgradeStore.TeamScore} / 100";
-
+        ? (int)Math.Round((double)correctVotes / totalPlayers * 100)
+        : 0;
+        if (totalPlayers > 0 && roundScore < 50)
+        {
+            UpgradeStore.TeamLives = Math.Max(0, UpgradeStore.TeamLives - 1);
+        }
+        if (_roundOverclockActive)
+        {
+            roundScore *= 2;
+        }
+        UpgradeStore.TeamScore += roundScore;
+        UpdateStatusBadge();
+        ScoreText.Text = $"Score: {UpgradeStore.TeamScore} (+{roundScore})";
         List<string> results = new();
         for (int i = 0; i < 4; i++)
         {
             double percentage = totalVotes > 0
-                ? Math.Round((double)counts[i] / totalVotes * 100, 1)
-                : 0;
-
+            ? Math.Round((double)counts[i] / totalVotes * 100, 1)
+            : 0;
             string correctTag = i == _currentQuestion.CorrectIndex ? " ✅ (Correct)" : "";
             results.Add($"{colorLabels[i]}: {percentage}% ({counts[i]} votes){correctTag}");
         }
-
         AnswersList.ItemsSource = results;
         ResultsPanel.IsVisible = true;
     }
