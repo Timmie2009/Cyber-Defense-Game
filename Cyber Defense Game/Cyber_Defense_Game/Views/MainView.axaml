@@ -19,7 +19,7 @@
 
         <ContentControl x:Name="ContentHost" />
 
-        <TextBlock Text="v1.0.11"
+        <TextBlock Text="v1.1.0"
                    Foreground="Red"
                    FontSize="24"
                    Opacity="0.6"

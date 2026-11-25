@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.Connections;
-using Microsoft.AspNetCore.SignalR.Client;
+﻿using Microsoft.AspNetCore.SignalR.Client;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -8,16 +7,16 @@ namespace Cyber_Defense_Game;
 
 public static class GameConnection
 {
-    public const string ClientVersion = "v1.0.11";
+    public const string ClientVersion = "v1.1.0";
 
     public static bool IsHost { get; set; }
     public static event Action? QuestionChanged;
 
     private static HubConnection? _connection;
-    public static event Action<string, string, int>? UpgradeVoteReceived;
     private static Task? _connectTask;
 
     public static event Action? RoundEnded;
+    public static event Action<string, string, int>? UpgradeVoteReceived;
 
     public static List<string> CurrentPlayers { get; private set; } = new();
     public static event Action? GameStarted;
@@ -39,8 +38,7 @@ public static class GameConnection
         try
         {
             _connection = new HubConnectionBuilder()
-                .WithUrl($"{serverUrl.TrimEnd('/')}/gamehub",
-                    o => o.Transports = HttpTransportType.WebSockets)
+                .WithUrl($"{serverUrl.TrimEnd('/')}/gamehub")
                 .WithAutomaticReconnect()
                 .Build();
 
@@ -74,6 +72,7 @@ public static class GameConnection
             });
 
             _connection.On("RoundEnded", () => RoundEnded?.Invoke());
+
             _connection.On<int, int>("UpgradeVoteStarted", (id1, id2) =>
             {
                 UpgradeStore.SetActiveUpgrades(id1, id2);
@@ -81,6 +80,7 @@ public static class GameConnection
 
             _connection.On<string, string, int>("UpgradeVoteReceived",
                 (id, name, choice) => UpgradeVoteReceived?.Invoke(id, name, choice));
+
             await _connection.StartAsync();
 
             try
@@ -135,10 +135,10 @@ public static class GameConnection
 
     public static Task EndRoundAsync() =>
         _connection?.InvokeAsync("EndRound") ?? Task.CompletedTask;
+
     public static Task StartUpgradeVoteAsync(int option1Id, int option2Id) =>
-    _connection?.InvokeAsync("StartUpgradeVote", option1Id, option2Id) ?? Task.CompletedTask;
+        _connection?.InvokeAsync("StartUpgradeVote", option1Id, option2Id) ?? Task.CompletedTask;
 
     public static Task SubmitUpgradeVoteAsync(int choiceIndex) =>
         _connection?.InvokeAsync("SubmitUpgradeVote", choiceIndex) ?? Task.CompletedTask;
-
 }

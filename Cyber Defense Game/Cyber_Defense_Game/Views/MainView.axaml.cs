@@ -83,17 +83,7 @@ public partial class MainView : UserControl
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.ToString());
-
-            await Avalonia.Threading.Dispatcher.UIThread
-                .InvokeAsync(() =>
-                {
-                    ContentHost.Content = new TextBlock
-                    {
-                        Text = $"SignalR fout:\n{ex.Message}",
-                        TextWrapping = Avalonia.Media.TextWrapping.Wrap
-                    };
-                });
+            Console.WriteLine($"Initial SignalR connect warning: {ex}");
         }
     }
 
