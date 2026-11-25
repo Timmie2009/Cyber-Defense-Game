@@ -15,7 +15,6 @@ public partial class HostQuestionView : UserControl
     private readonly Dictionary<string, (string Name, int AnswerIndex)> _playerAnswers = new();
     private CancellationTokenSource? _timerCts;
     private bool _timeUp;
-    private int _questionIndex = 0;
     private QuizQuestion _currentQuestion = QuestionStore.GetCurrentQuestion();
 
     public HostQuestionView()
@@ -67,13 +66,15 @@ public partial class HostQuestionView : UserControl
         GameConnection.PlayersUpdated -= OnPlayersUpdated;
         GameConnection.PlayersUpdated += OnPlayersUpdated;
 
-        _questionIndex = 0;
         var all = QuestionStore.GetAll();
         if (all.Count > 0)
         {
-            string firstName = all[0].Title;
-            QuestionStore.SetActiveQuestion(firstName);
-            _ = SafeLoadQuestionAsync(firstName);
+            if (UpgradeStore.QuestionIndex >= all.Count)
+                UpgradeStore.QuestionIndex = 0;
+
+            string currentName = all[UpgradeStore.QuestionIndex].Title;
+            QuestionStore.SetActiveQuestion(currentName);
+            _ = SafeLoadQuestionAsync(currentName);
         }
 
         StartRound();
@@ -103,6 +104,8 @@ public partial class HostQuestionView : UserControl
     private void StartRound()
     {
         _currentQuestion = QuestionStore.GetCurrentQuestion();
+
+        ScoreText.Text = $"Score: {UpgradeStore.TeamScore} / 100";
 
         try
         {
@@ -149,8 +152,16 @@ public partial class HostQuestionView : UserControl
         var all = QuestionStore.GetAll();
         if (all.Count == 0) return;
 
-        _questionIndex = (_questionIndex + 1) % all.Count;
-        string nextName = all[_questionIndex].Title;
+        UpgradeStore.QuestionsPlayed++;
+        UpgradeStore.QuestionIndex = (UpgradeStore.QuestionIndex + 1) % all.Count;
+
+        if (UpgradeStore.QuestionsPlayed % 5 == 0)
+        {
+            _main?.ShowUpgradeVote();
+            return;
+        }
+
+        string nextName = all[UpgradeStore.QuestionIndex].Title;
 
         try
         {
@@ -253,6 +264,21 @@ public partial class HostQuestionView : UserControl
                 }
             }
         }
+
+        int totalPlayers = GameConnection.CurrentPlayers.Count > 0
+            ? GameConnection.CurrentPlayers.Count
+            : totalVotes;
+
+        int correctVotes = _currentQuestion.CorrectIndex >= 0 && _currentQuestion.CorrectIndex < 4
+            ? counts[_currentQuestion.CorrectIndex]
+            : 0;
+
+        int roundScore = totalPlayers > 0
+            ? (int)Math.Round((double)correctVotes / totalPlayers * 100)
+            : 0;
+
+        UpgradeStore.TeamScore = Math.Clamp(roundScore, 0, 100);
+        ScoreText.Text = $"Score: {UpgradeStore.TeamScore} / 100";
 
         List<string> results = new();
         for (int i = 0; i < 4; i++)

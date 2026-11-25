@@ -45,7 +45,16 @@ public class GameHub : Hub
         }
         await Clients.All.SendAsync("QuestionDeleted", questionName);
     }
+    public async Task StartUpgradeVote(int option1Id, int option2Id)
+    {
+        await Clients.All.SendAsync("UpgradeVoteStarted", option1Id, option2Id);
+    }
 
+    public async Task SubmitUpgradeVote(int choiceIndex)
+    {
+        var name = Players.GetValueOrDefault(Context.ConnectionId, "Unknown");
+        await Clients.Group("hosts").SendAsync("UpgradeVoteReceived", Context.ConnectionId, name, choiceIndex);
+    }
     private static void EnsureDefaultQuestion()
     {
         lock (FileLock)

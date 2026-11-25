@@ -14,6 +14,7 @@ public static class GameConnection
     public static event Action? QuestionChanged;
 
     private static HubConnection? _connection;
+    public static event Action<string, string, int>? UpgradeVoteReceived;
     private static Task? _connectTask;
 
     public static event Action? RoundEnded;
@@ -73,7 +74,13 @@ public static class GameConnection
             });
 
             _connection.On("RoundEnded", () => RoundEnded?.Invoke());
+            _connection.On<int, int>("UpgradeVoteStarted", (id1, id2) =>
+            {
+                UpgradeStore.SetActiveUpgrades(id1, id2);
+            });
 
+            _connection.On<string, string, int>("UpgradeVoteReceived",
+                (id, name, choice) => UpgradeVoteReceived?.Invoke(id, name, choice));
             await _connection.StartAsync();
 
             try
@@ -128,4 +135,10 @@ public static class GameConnection
 
     public static Task EndRoundAsync() =>
         _connection?.InvokeAsync("EndRound") ?? Task.CompletedTask;
+    public static Task StartUpgradeVoteAsync(int option1Id, int option2Id) =>
+    _connection?.InvokeAsync("StartUpgradeVote", option1Id, option2Id) ?? Task.CompletedTask;
+
+    public static Task SubmitUpgradeVoteAsync(int choiceIndex) =>
+        _connection?.InvokeAsync("SubmitUpgradeVote", choiceIndex) ?? Task.CompletedTask;
+
 }

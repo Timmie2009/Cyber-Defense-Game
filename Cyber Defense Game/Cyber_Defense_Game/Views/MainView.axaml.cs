@@ -22,16 +22,41 @@ public partial class MainView : UserControl
         Avalonia.Threading.Dispatcher.UIThread.Post(ShowCountdown);
     }
 
+    private void OnUpgradePhaseStarted()
+    {
+        if (!GameConnection.IsHost)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(ShowUpgradeVote);
+        }
+    }
+
+    private void OnQuestionLoaded(string _)
+    {
+        if (!GameConnection.IsHost && ContentHost.Content is PlayerUpgradeView)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(ShowGame);
+        }
+    }
+
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+
         GameConnection.GameStarted -= OnGameStarted;
         GameConnection.GameStarted += OnGameStarted;
+
+        UpgradeStore.UpgradePhaseStarted -= OnUpgradePhaseStarted;
+        UpgradeStore.UpgradePhaseStarted += OnUpgradePhaseStarted;
+
+        QuestionStore.QuestionLoaded -= OnQuestionLoaded;
+        QuestionStore.QuestionLoaded += OnQuestionLoaded;
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         GameConnection.GameStarted -= OnGameStarted;
+        UpgradeStore.UpgradePhaseStarted -= OnUpgradePhaseStarted;
+        QuestionStore.QuestionLoaded -= OnQuestionLoaded;
         base.OnDetachedFromVisualTree(e);
     }
 
@@ -40,13 +65,21 @@ public partial class MainView : UserControl
         ContentHost.Content = new CountdownView(this);
     }
 
+    public void ShowUpgradeVote()
+    {
+        if (GameConnection.IsHost)
+            ContentHost.Content = new HostUpgradeView(this);
+        else
+            ContentHost.Content = new PlayerUpgradeView(this);
+    }
+
     private async void MainView_Loaded(object? sender, RoutedEventArgs e)
     {
         Loaded -= MainView_Loaded;
 
         try
         {
-            await GameConnection.ConnectAsync("https://cyberquiz.tail9822f1.ts.net/");
+            await GameConnection.ConnectAsync("https://ts.net");
         }
         catch (Exception ex)
         {
@@ -67,6 +100,9 @@ public partial class MainView : UserControl
     public void ShowMenu()
     {
         BrowserMusic.StopSafe();
+        UpgradeStore.QuestionsPlayed = 0;
+        UpgradeStore.QuestionIndex = 0;
+        UpgradeStore.TeamScore = 0;
 
         var menu = new MenuView();
 
@@ -136,7 +172,6 @@ public static partial class BrowserMusic
     [JSImport("globalThis.stopHostMusic")]
     private static partial void Stop();
 }
-
 
 public static partial class BrowserInput
 {

@@ -1,0 +1,96 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Cyber_Defense_Game.Views.HostUpgradeView">
+  <DockPanel Margin="30">
+        <!-- Header -->
+        <StackPanel DockPanel.Dock="Top" Spacing="10" Margin="0,10,0,20">
+            <TextBlock Text="Choose an Upgrade!"
+                       FontSize="36"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center" />
+            <TextBlock x:Name="TimerText"
+                       Text="Time left: 15"
+                       FontSize="26"
+                       FontWeight="SemiBold"
+                       Foreground="#E53935"
+                       HorizontalAlignment="Center" />
+            <TextBlock x:Name="VoteCountText"
+                       Text="Votes: 0 / 0"
+                       FontSize="22"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center" />
+        </StackPanel>
+
+        <!-- Winner banner & Continue button (shown after voting ends) -->
+        <StackPanel x:Name="ResultPanel"
+                    DockPanel.Dock="Bottom"
+                    Spacing="15"
+                    IsVisible="False"
+                    HorizontalAlignment="Center"
+                    Margin="0,20,0,0">
+            <TextBlock x:Name="WinnerText"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       Foreground="#43A047"
+                       HorizontalAlignment="Center" />
+            <Button Content="Continue to Next Question"
+                    FontSize="20"
+                    HorizontalAlignment="Center"
+                    Click="Continue_Click" />
+        </StackPanel>
+
+        <!-- 2 Upgrade Cards -->
+        <UniformGrid Rows="1" Columns="2" Margin="20">
+            <Border Background="#1E88E5" CornerRadius="16" Padding="24" Margin="15">
+                <StackPanel VerticalAlignment="Center" Spacing="15">
+                    <TextBlock x:Name="Upgrade1Title"
+                               Text="Upgrade 1"
+                               FontSize="30"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               TextWrapping="Wrap"
+                               HorizontalAlignment="Center" />
+                    <TextBlock x:Name="Upgrade1Desc"
+                               Text="Description 1"
+                               FontSize="20"
+                               Foreground="White"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center" />
+                    <TextBlock x:Name="Upgrade1Votes"
+                               Text="0 votes"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               Foreground="#FFD54F"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
+
+            <Border Background="#8E24AA" CornerRadius="16" Padding="24" Margin="15">
+                <StackPanel VerticalAlignment="Center" Spacing="15">
+                    <TextBlock x:Name="Upgrade2Title"
+                               Text="Upgrade 2"
+                               FontSize="30"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               TextWrapping="Wrap"
+                               HorizontalAlignment="Center" />
+                    <TextBlock x:Name="Upgrade2Desc"
+                               Text="Description 2"
+                               FontSize="20"
+                               Foreground="White"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center" />
+                    <TextBlock x:Name="Upgrade2Votes"
+                               Text="0 votes"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               Foreground="#FFD54F"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </UniformGrid>
+    </DockPanel>
+</UserControl>
