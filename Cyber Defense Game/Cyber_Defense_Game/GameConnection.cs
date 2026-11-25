@@ -7,7 +7,7 @@ namespace Cyber_Defense_Game;
 
 public static class GameConnection
 {
-    public const string ClientVersion = "v1.2.0";
+    public const string ClientVersion = "v1.2.1";
 
     public static bool IsHost { get; set; }
     public static event Action? QuestionChanged;
@@ -64,6 +64,7 @@ public static class GameConnection
 
             _connection.On<string>("QuestionLoaded", questionName =>
             {
+                UpgradeStore.EliminatedOptionIndex = -1;
                 QuestionStore.SetActiveQuestion(questionName);
             });
 
@@ -84,6 +85,7 @@ public static class GameConnection
 
             _connection.On<int>("OptionEliminated", wrongIndex =>
             {
+                UpgradeStore.EliminatedOptionIndex = wrongIndex;
                 OptionEliminated?.Invoke(wrongIndex);
             });
 

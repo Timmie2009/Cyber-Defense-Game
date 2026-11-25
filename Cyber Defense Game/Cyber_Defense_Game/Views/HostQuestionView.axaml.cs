@@ -16,6 +16,7 @@ public partial class HostQuestionView : UserControl
     private readonly Dictionary<string, (string Name, int AnswerIndex)> _playerAnswers = new();
     private CancellationTokenSource? _timerCts;
     private bool _timeUp;
+    private bool _quizFinished;
     private bool _roundOverclockActive;
     private QuizQuestion _currentQuestion = QuestionStore.GetCurrentQuestion();
 
@@ -58,7 +59,7 @@ public partial class HostQuestionView : UserControl
 
     private void OnPlayersUpdated(List<string> _) => UpdateAnsweredCount();
 
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    protected override async void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
 
@@ -68,15 +69,16 @@ public partial class HostQuestionView : UserControl
         GameConnection.PlayersUpdated -= OnPlayersUpdated;
         GameConnection.PlayersUpdated += OnPlayersUpdated;
 
-        var all = QuestionStore.GetAll();
-        if (all.Count > 0)
+        UpgradeStore.EnsureGameQueue();
+
+        if (UpgradeStore.GameQueue.Count > 0)
         {
-            if (UpgradeStore.QuestionIndex >= all.Count)
+            if (UpgradeStore.QuestionIndex >= UpgradeStore.GameQueue.Count)
                 UpgradeStore.QuestionIndex = 0;
 
-            string currentName = all[UpgradeStore.QuestionIndex].Title;
+            string currentName = UpgradeStore.GameQueue[UpgradeStore.QuestionIndex].Title;
             QuestionStore.SetActiveQuestion(currentName);
-            _ = SafeLoadQuestionAsync(currentName);
+            await SafeLoadQuestionAsync(currentName);
         }
 
         StartRound();
@@ -156,7 +158,9 @@ public partial class HostQuestionView : UserControl
             Console.WriteLine($"Music warning: {ex.Message}");
         }
 
-        string fullQuestionText = $"[{_currentQuestion.Difficulty}] {_currentQuestion.QuestionText}";
+        int questionNumber = UpgradeStore.QuestionIndex + 1;
+        int totalInQueue = Math.Max(1, UpgradeStore.GameQueue.Count);
+        string fullQuestionText = $"Q{questionNumber}/{totalInQueue} [{_currentQuestion.Difficulty}] {_currentQuestion.QuestionText}";
         QuestionTitleText.Text = fullQuestionText;
         QuestionTitleText.FontSize = fullQuestionText.Length switch
         {
@@ -214,19 +218,42 @@ public partial class HostQuestionView : UserControl
 
     private async void NextQuestion_Click(object? sender, RoutedEventArgs e)
     {
-        var all = QuestionStore.GetAll();
-        if (all.Count == 0) return;
+        if (_quizFinished)
+        {
+            _main?.ShowMenu();
+            return;
+        }
+
+        UpgradeStore.EnsureGameQueue();
+        if (UpgradeStore.GameQueue.Count == 0) return;
 
         UpgradeStore.QuestionsPlayed++;
-        UpgradeStore.QuestionIndex = (UpgradeStore.QuestionIndex + 1) % all.Count;
+        UpgradeStore.QuestionIndex++;
 
+        // End the quiz after all queued questions (5 Easy, 5 Normal, 5 Hard, 5 IMPOSSIBLE)
+        if (UpgradeStore.QuestionIndex >= UpgradeStore.GameQueue.Count)
+        {
+            _quizFinished = true;
+            _timerCts?.Cancel();
+            BrowserMusic.StopSafe();
+
+            QuestionTitleText.Text = $"Quiz Complete! Final Team Score: {UpgradeStore.TeamScore}";
+            TimerText.Text = $"Lives Remaining: {UpgradeStore.TeamLives}/3";
+            if (sender is Button btn)
+            {
+                btn.Content = "Back to Menu";
+            }
+            return;
+        }
+
+        // Open the Upgrade Shop every 5 questions (between Easy -> Normal -> Hard -> IMPOSSIBLE)
         if (UpgradeStore.QuestionsPlayed % 5 == 0)
         {
             _main?.ShowUpgradeVote();
             return;
         }
 
-        string nextName = all[UpgradeStore.QuestionIndex].Title;
+        string nextName = UpgradeStore.GameQueue[UpgradeStore.QuestionIndex].Title;
 
         try
         {
@@ -300,21 +327,19 @@ public partial class HostQuestionView : UserControl
         {
             TimerText.Text = $"EndRound error: {ex.Message}";
         }
-    }
 
+    }
     private void RevealResults()
     {
         string[] colorLabels =
         {
-            $"Red (A: {_currentQuestion.OptionA})",
-            $"Green (B: {_currentQuestion.OptionB})",
-            $"Blue (C: {_currentQuestion.OptionC})",
-            $"White (D: {_currentQuestion.OptionD})"
-        };
-
+$"Red (A: {_currentQuestion.OptionA})",
+$"Green (B: {_currentQuestion.OptionB})",
+$"Blue (C: {_currentQuestion.OptionC})",
+$"White (D: {_currentQuestion.OptionD})"
+};
         int[] counts = new int[4];
         int totalVotes = 0;
-
         lock (_playerAnswers)
         {
             foreach (var entry in _playerAnswers.Values)
@@ -326,15 +351,12 @@ public partial class HostQuestionView : UserControl
                 }
             }
         }
-
         int totalPlayers = GameConnection.CurrentPlayers.Count > 0
-            ? GameConnection.CurrentPlayers.Count
-            : totalVotes;
-
+        ? GameConnection.CurrentPlayers.Count
+        : totalVotes;
         int correctVotes = _currentQuestion.CorrectIndex >= 0 && _currentQuestion.CorrectIndex < 4
-
-? counts[_currentQuestion.CorrectIndex]
-: 0;
+        ? counts[_currentQuestion.CorrectIndex]
+        : 0;
         int roundScore = totalPlayers > 0
         ? (int)Math.Round((double)correctVotes / totalPlayers * 100)
         : 0;

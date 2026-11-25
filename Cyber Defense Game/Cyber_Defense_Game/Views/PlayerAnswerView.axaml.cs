@@ -30,6 +30,17 @@ public partial class PlayerAnswerView : UserControl
         }
     }
 
+    private void ApplyEliminatedOption(int wrongIndex)
+    {
+        Button[] buttons = { RedButton, GreenButton, BlueButton, WhiteButton };
+        if (wrongIndex >= 0 && wrongIndex < buttons.Length)
+        {
+            buttons[wrongIndex].IsEnabled = false;
+            buttons[wrongIndex].Opacity = 0.2;
+            StatusText.Text = "Threat Scanner removed 1 wrong answer!";
+        }
+    }
+
     private void OnQuestionLoaded(string questionName)
     {
         var q = QuestionStore.GetByName(questionName);
@@ -43,21 +54,17 @@ public partial class PlayerAnswerView : UserControl
             ResetButtons();
             AnswerGrid.IsVisible = true;
             StatusText.Text = $"[{q.Difficulty}] {q.Title} - Pick an answer!";
+
+            if (UpgradeStore.EliminatedOptionIndex >= 0)
+            {
+                ApplyEliminatedOption(UpgradeStore.EliminatedOptionIndex);
+            }
         });
     }
 
     private void OnOptionEliminated(int wrongIndex)
     {
-        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-        {
-            Button[] buttons = { RedButton, GreenButton, BlueButton, WhiteButton };
-            if (wrongIndex >= 0 && wrongIndex < buttons.Length)
-            {
-                buttons[wrongIndex].IsEnabled = false;
-                buttons[wrongIndex].Opacity = 0.2;
-                StatusText.Text = "Threat Scanner removed 1 wrong answer!";
-            }
-        });
+        Avalonia.Threading.Dispatcher.UIThread.Post(() => ApplyEliminatedOption(wrongIndex));
     }
 
     private void OnRoundEnded()
@@ -105,6 +112,11 @@ public partial class PlayerAnswerView : UserControl
         ResetButtons();
         var current = QuestionStore.GetCurrentQuestion();
         StatusText.Text = $"[{current.Difficulty}] {current.Title} - Pick an answer!";
+
+        if (UpgradeStore.EliminatedOptionIndex >= 0)
+        {
+            ApplyEliminatedOption(UpgradeStore.EliminatedOptionIndex);
+        }
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
