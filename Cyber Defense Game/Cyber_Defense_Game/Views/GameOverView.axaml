@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Cyber_Defense_Game.Views.GameOverView">
+  <Grid>
+        <Border Background="#CC0D1B2A"
+                BorderBrush="#E53935"
+                BorderThickness="3"
+                CornerRadius="20"
+                Padding="40"
+                MaxWidth="560"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+            <StackPanel Spacing="20" HorizontalAlignment="Center">
+                <TextBlock Text="GAME OVER"
+                           FontSize="48"
+                           FontWeight="Bold"
+                           Foreground="#E53935"
+                           HorizontalAlignment="Center" />
+
+                <TextBlock Text="Your cyber defenses were breached! (0/3 Lives)"
+                           FontSize="20"
+                           Foreground="White"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           HorizontalAlignment="Center" />
+
+                <TextBlock x:Name="FinalScoreText"
+                           Text="Final Team Score: 0"
+                           FontSize="30"
+                           FontWeight="Bold"
+                           Foreground="#FFD54F"
+                           HorizontalAlignment="Center" />
+
+                <TextBlock x:Name="ProgressText"
+                           Text="Questions Survived: 0"
+                           FontSize="20"
+                           Foreground="#B0BEC5"
+                           HorizontalAlignment="Center" />
+
+                <Button Content="Back to Menu"
+                        FontSize="22"
+                        FontWeight="Bold"
+                        Padding="24,12"
+                        HorizontalAlignment="Center"
+                        Click="BackToMenu_Click" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

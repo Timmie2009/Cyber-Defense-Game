@@ -33,28 +33,7 @@ public class GameHub : Hub
         var clean = new string(title.Trim().Select(c => invalid.Contains(c) ? '_' : c).ToArray());
         return string.IsNullOrWhiteSpace(clean) ? "Untitled" : clean;
     }
-    public async Task DeleteQuestion(string questionName)
-    {
-        lock (FileLock)
-        {
-            var path = Path.Combine(QuestionsFolder, $"{GetSafeFileName(questionName)}.json");
-            if (File.Exists(path))
-            {
-                File.Delete(path);
-            }
-        }
-        await Clients.All.SendAsync("QuestionDeleted", questionName);
-    }
-    public async Task StartUpgradeVote(int option1Id, int option2Id)
-    {
-        await Clients.All.SendAsync("UpgradeVoteStarted", option1Id, option2Id);
-    }
 
-    public async Task SubmitUpgradeVote(int choiceIndex)
-    {
-        var name = Players.GetValueOrDefault(Context.ConnectionId, "Unknown");
-        await Clients.Group("hosts").SendAsync("UpgradeVoteReceived", Context.ConnectionId, name, choiceIndex);
-    }
     private static void EnsureDefaultQuestion()
     {
         lock (FileLock)
@@ -111,7 +90,6 @@ public class GameHub : Hub
         }
     }
 
-
     public async Task SaveQuestion(QuizQuestion question)
     {
         SaveQuestionFile(question);
@@ -121,6 +99,40 @@ public class GameHub : Hub
     public async Task LoadQuestion(string questionName)
     {
         await Clients.All.SendAsync("QuestionLoaded", questionName);
+    }
+
+    public async Task DeleteQuestion(string questionName)
+    {
+        lock (FileLock)
+        {
+            var path = Path.Combine(QuestionsFolder, $"{GetSafeFileName(questionName)}.json");
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        await Clients.All.SendAsync("QuestionDeleted", questionName);
+    }
+
+    public async Task EndRound()
+    {
+        await Clients.All.SendAsync("RoundEnded");
+    }
+
+    public async Task StartUpgradeVote(int option1Id, int option2Id)
+    {
+        await Clients.All.SendAsync("UpgradeVoteStarted", option1Id, option2Id);
+    }
+
+    public async Task SubmitUpgradeVote(int choiceIndex)
+    {
+        var name = Players.GetValueOrDefault(Context.ConnectionId, "Unknown");
+        await Clients.Group("hosts").SendAsync("UpgradeVoteReceived", Context.ConnectionId, name, choiceIndex);
+    }
+
+    public async Task EliminateOption(int wrongIndex)
+    {
+        await Clients.All.SendAsync("OptionEliminated", wrongIndex);
     }
 
     public async Task JoinLobby(string name)
@@ -147,18 +159,19 @@ public class GameHub : Hub
     public async Task StartGame() =>
         await Clients.All.SendAsync("GameStarted");
 
+    public async Task NextQuestion() =>
+        await Clients.All.SendAsync("QuestionChanged");
+
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         Players.TryRemove(Context.ConnectionId, out _);
         await BroadcastPlayers();
         await base.OnDisconnectedAsync(exception);
     }
-
+    public async Task TriggerGameOver(int finalScore)
+    {
+        await Clients.All.SendAsync("GameOver", finalScore);
+    }
     private static List<string> GetPlayerList() => Players.Values.ToList();
     private Task BroadcastPlayers() => Clients.All.SendAsync("PlayersUpdated", GetPlayerList());
-
-    public async Task EndRound()
-    {
-        await Clients.All.SendAsync("RoundEnded");
-    }
 }

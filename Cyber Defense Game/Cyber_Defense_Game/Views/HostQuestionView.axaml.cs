@@ -105,7 +105,7 @@ public partial class HostQuestionView : UserControl
         base.OnDetachedFromVisualTree(e);
     }
 
-    private void UpdateStatusBadge()
+    private void UpdateStatusBadge(bool roundThreatScannerActive)
     {
         ScoreText.Text = $"Score: {UpgradeStore.TeamScore}";
         string hearts = new string('❤', Math.Max(0, UpgradeStore.TeamLives));
@@ -115,9 +115,9 @@ public partial class HostQuestionView : UserControl
         if (UpgradeStore.ExtraTimeRoundsLeft > 0)
             buffs.Add($"⏱ Extra Time ({UpgradeStore.ExtraTimeRoundsLeft} left)");
         if (_roundOverclockActive)
-            buffs.Add("⚡ Overclock (2x Points)");
-        if (UpgradeStore.ThreatScannerActive)
-            buffs.Add("🔍 Threat Scanner");
+            buffs.Add($"⚡ Overclock 2x ({UpgradeStore.OverclockRoundsLeft} left)");
+        if (roundThreatScannerActive)
+            buffs.Add($"🔍 Threat Scanner ({UpgradeStore.ThreatScannerRoundsLeft} left)");
 
         if (buffs.Count > 0)
         {
@@ -134,11 +134,13 @@ public partial class HostQuestionView : UserControl
     {
         _currentQuestion = QuestionStore.GetCurrentQuestion();
 
-        _roundOverclockActive = UpgradeStore.OverclockActive;
-        UpgradeStore.OverclockActive = false;
+        _roundOverclockActive = UpgradeStore.OverclockRoundsLeft > 0;
+        if (_roundOverclockActive)
+            UpgradeStore.OverclockRoundsLeft--;
 
-        bool useThreatScanner = UpgradeStore.ThreatScannerActive;
-        UpgradeStore.ThreatScannerActive = false;
+        bool useThreatScanner = UpgradeStore.ThreatScannerRoundsLeft > 0;
+        if (useThreatScanner)
+            UpgradeStore.ThreatScannerRoundsLeft--;
 
         int roundSeconds = 30;
         if (UpgradeStore.ExtraTimeRoundsLeft > 0)
@@ -147,7 +149,7 @@ public partial class HostQuestionView : UserControl
             UpgradeStore.ExtraTimeRoundsLeft--;
         }
 
-        UpdateStatusBadge();
+        UpdateStatusBadge(useThreatScanner);
 
         try
         {
@@ -230,7 +232,21 @@ public partial class HostQuestionView : UserControl
         UpgradeStore.QuestionsPlayed++;
         UpgradeStore.QuestionIndex++;
 
-        // End the quiz after all queued questions (5 Easy, 5 Normal, 5 Hard, 5 IMPOSSIBLE)
+        if (UpgradeStore.TeamLives <= 0)
+        {
+            try
+            {
+                await GameConnection.TriggerGameOverAsync(UpgradeStore.TeamScore);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"TriggerGameOver warning: {ex.Message}");
+            }
+
+            _main?.ShowGameOver();
+            return;
+        }
+
         if (UpgradeStore.QuestionIndex >= UpgradeStore.GameQueue.Count)
         {
             _quizFinished = true;
@@ -246,7 +262,6 @@ public partial class HostQuestionView : UserControl
             return;
         }
 
-        // Open the Upgrade Shop every 5 questions (between Easy -> Normal -> Hard -> IMPOSSIBLE)
         if (UpgradeStore.QuestionsPlayed % 5 == 0)
         {
             _main?.ShowUpgradeVote();
@@ -312,13 +327,11 @@ public partial class HostQuestionView : UserControl
             $"C ({_currentQuestion.OptionC})",
             $"D ({_currentQuestion.OptionD})"
         };
-        string correctLabel = _currentQuestion.CorrectIndex >= 0 && _currentQuestion.CorrectIndex < options.Length
-            ? options[_currentQuestion.CorrectIndex]
-            : "Unknown";
-
+string correctLabel = _currentQuestion.CorrectIndex >= 0 && _currentQuestion.CorrectIndex < options.Length
+? options[_currentQuestion.CorrectIndex]
+: "Unknown";
         TimerText.Text = $"{reason} Correct answer: {correctLabel}";
         RevealResults();
-
         try
         {
             await GameConnection.EndRoundAsync();
@@ -327,7 +340,6 @@ public partial class HostQuestionView : UserControl
         {
             TimerText.Text = $"EndRound error: {ex.Message}";
         }
-
     }
     private void RevealResults()
     {
@@ -369,7 +381,7 @@ $"White (D: {_currentQuestion.OptionD})"
             roundScore *= 2;
         }
         UpgradeStore.TeamScore += roundScore;
-        UpdateStatusBadge();
+        UpdateStatusBadge(false);
         ScoreText.Text = $"Score: {UpgradeStore.TeamScore} (+{roundScore})";
         List<string> results = new();
         for (int i = 0; i < 4; i++)

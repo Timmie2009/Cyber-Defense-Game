@@ -8,6 +8,7 @@ namespace Cyber_Defense_Game;
 public static class GameConnection
 {
     public const string ClientVersion = "v1.2.1";
+    public static event Action<int>? GameOverReceived;
 
     public static bool IsHost { get; set; }
     public static event Action? QuestionChanged;
@@ -82,7 +83,11 @@ public static class GameConnection
 
             _connection.On<string, string, int>("UpgradeVoteReceived",
                 (id, name, choice) => UpgradeVoteReceived?.Invoke(id, name, choice));
-
+            _connection.On<int>("GameOver", finalScore =>
+            {
+                UpgradeStore.TeamScore = finalScore;
+                GameOverReceived?.Invoke(finalScore);
+            });
             _connection.On<int>("OptionEliminated", wrongIndex =>
             {
                 UpgradeStore.EliminatedOptionIndex = wrongIndex;
@@ -145,6 +150,8 @@ public static class GameConnection
 
     public static Task StartUpgradeVoteAsync(int option1Id, int option2Id) =>
         _connection?.InvokeAsync("StartUpgradeVote", option1Id, option2Id) ?? Task.CompletedTask;
+    public static Task TriggerGameOverAsync(int finalScore) =>
+    _connection?.InvokeAsync("TriggerGameOver", finalScore) ?? Task.CompletedTask;
 
     public static Task SubmitUpgradeVoteAsync(int choiceIndex) =>
         _connection?.InvokeAsync("SubmitUpgradeVote", choiceIndex) ?? Task.CompletedTask;
