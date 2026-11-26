@@ -182,6 +182,7 @@ public partial class HostQuestionView : UserControl
     private async void StartRound()
     {
         _currentQuestion = QuestionStore.GetCurrentQuestion();
+        BrowserMusic.PlayEffectSafe("question_appear");
 
         _roundOverclockActive = UpgradeStore.OverclockRoundsLeft > 0;
         if (_roundOverclockActive)
@@ -199,6 +200,8 @@ public partial class HostQuestionView : UserControl
         }
 
         UpdateStatusBadge(useThreatScanner);
+        if (_roundOverclockActive || useThreatScanner || roundSeconds > 30)
+            BrowserMusic.PlayEffectSafe("powerup_activate");
 
         try
         {
@@ -295,6 +298,14 @@ public partial class HostQuestionView : UserControl
         {
             _timerCts?.Cancel();
             BrowserMusic.StopSafe();
+            BrowserMusic.PlayEffectSafe("victory_fanfare");
+
+            QuestionTitleText.Text = $"Quiz Complete! Final Team Score: {UpgradeStore.TeamScore}";
+            TimerText.Text = $"Lives Remaining: {UpgradeStore.TeamLives}/3";
+            if (sender is Button btn)
+            {
+                btn.Content = "Back to Menu";
+            }
 
             try
             {
@@ -338,11 +349,14 @@ public partial class HostQuestionView : UserControl
                 if (token.IsCancellationRequested) return;
 
                 TimerText.Text = $"Time left: {seconds}";
+                if (seconds <= 5)
+                    BrowserMusic.PlayEffectSafe(seconds == 5 ? "timer_urgent" : "timer_tick");
                 await Task.Delay(1000, token);
             }
 
             if (token.IsCancellationRequested) return;
 
+            BrowserMusic.PlayEffectSafe("time_up");
             FinishRound("Time's up!");
         }
         catch (TaskCanceledException) { }
@@ -424,6 +438,8 @@ $"White (D: {_currentQuestion.OptionD})"
         {
             UpgradeStore.TeamLives = Math.Max(0, UpgradeStore.TeamLives - 1);
         }
+        if (totalPlayers > 0)
+            BrowserMusic.PlayEffectSafe(roundScore >= 50 ? "answer_correct" : "answer_wrong");
         if (_roundOverclockActive)
         {
             roundScore *= 2;
@@ -442,5 +458,7 @@ $"White (D: {_currentQuestion.OptionD})"
         }
         AnswersList.ItemsSource = results;
         ResultsPanel.IsVisible = true;
+        if (UpgradeStore.QuestionIndex + 1 >= UpgradeStore.GameQueue.Count)
+            BrowserMusic.PlayEffectSafe("Scoreboard_reveal");
     }
 }

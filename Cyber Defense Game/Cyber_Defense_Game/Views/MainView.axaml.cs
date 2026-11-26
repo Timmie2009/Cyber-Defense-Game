@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Input;
 using System;
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
@@ -9,6 +10,17 @@ namespace Cyber_Defense_Game.Views;
 
 public partial class MainView : UserControl
 {
+    static MainView()
+    {
+        Button.ClickEvent.AddClassHandler<Button>((_, _) =>
+            BrowserMusic.PlayEffectSafe("ui_click"));
+        InputElement.PointerEnteredEvent.AddClassHandler<Button>((_, e) =>
+        {
+            if (e.Pointer.Type == PointerType.Mouse)
+                BrowserMusic.PlayEffectSafe("ui_hover");
+        });
+    }
+
     public MainView()
     {
         InitializeComponent();
@@ -19,7 +31,13 @@ public partial class MainView : UserControl
 
     private void OnGameStarted()
     {
-        Avalonia.Threading.Dispatcher.UIThread.Post(ShowCountdown);
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            bool startingFromHostLobby = ContentHost.Content is HostView;
+            ShowCountdown();
+            if (startingFromHostLobby)
+                BrowserMusic.PlayEffectSafe("game_start");
+        });
     }
 
     private void OnUpgradePhaseStarted()
@@ -99,7 +117,11 @@ public partial class MainView : UserControl
 
     public void ShowGameOver()
     {
+        if (ContentHost.Content is GameOverView)
+            return;
+
         ContentHost.Content = new GameOverView(this);
+        BrowserMusic.PlayEffectSafe("game_over_breach");
     }
 
     public void ShowVictory()
@@ -150,7 +172,11 @@ public partial class MainView : UserControl
     public void ShowGame()
     {
         if (GameConnection.IsHost)
+        {
+            if (ContentHost.Content is HostUpgradeView)
+                BrowserMusic.PlayEffectSafe("whoosh");
             ContentHost.Content = new HostQuestionView(this);
+        }
         else
             ContentHost.Content = new PlayerAnswerView(this);
     }
@@ -158,6 +184,16 @@ public partial class MainView : UserControl
 
 public static partial class BrowserMusic
 {
+    public static void PlayEffectSafe(string effect)
+    {
+        if (OperatingSystem.IsBrowser() && GameConnection.IsHost)
+            PlayEffect(effect);
+    }
+
+    [SupportedOSPlatform("browser")]
+    [JSImport("globalThis.playLobbyEffect")]
+    private static partial void PlayEffect(string effect);
+
     public static void PlaySafe()
     {
         if (OperatingSystem.IsBrowser())
