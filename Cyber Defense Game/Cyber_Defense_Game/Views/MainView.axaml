@@ -23,7 +23,7 @@
                             Height="720" />
         </Viewbox>
 
-        <TextBlock Text="v1.3.0"
+        <TextBlock Text="v1.3.1"
                    Foreground="Red"
                    FontSize="18"
                    Opacity="0.6"
