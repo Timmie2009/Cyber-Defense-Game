@@ -9,16 +9,21 @@
                 BorderBrush="#E53935"
                 BorderThickness="3"
                 CornerRadius="20"
-                Padding="40"
-                MaxWidth="560"
+                Padding="30"
+                MaxWidth="650"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center">
-            <StackPanel Spacing="20" HorizontalAlignment="Center">
+            <StackPanel Spacing="18" HorizontalAlignment="Center">
                 <TextBlock Text="GAME OVER"
-                           FontSize="48"
+                           FontSize="46"
                            FontWeight="Bold"
                            Foreground="#E53935"
                            HorizontalAlignment="Center" />
+
+                <Image x:Name="LoseImage"
+                       MaxHeight="240"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center" />
 
                 <TextBlock Text="Your cyber defenses were breached! (0/3 Lives)"
                            FontSize="20"
