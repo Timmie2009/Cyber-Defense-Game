@@ -7,8 +7,7 @@ namespace Cyber_Defense_Game;
 
 public static class GameConnection
 {
-    public const string ClientVersion = "v1.2.1";
-    public static event Action<int>? GameOverReceived;
+    public const string ClientVersion = "v1.3.0";
 
     public static bool IsHost { get; set; }
     public static event Action? QuestionChanged;
@@ -19,6 +18,8 @@ public static class GameConnection
     public static event Action? RoundEnded;
     public static event Action<string, string, int>? UpgradeVoteReceived;
     public static event Action<int>? OptionEliminated;
+    public static event Action<int>? GameOverReceived;
+    public static event Action<int, int>? VictoryReceived;
 
     public static List<string> CurrentPlayers { get; private set; } = new();
     public static event Action? GameStarted;
@@ -83,15 +84,24 @@ public static class GameConnection
 
             _connection.On<string, string, int>("UpgradeVoteReceived",
                 (id, name, choice) => UpgradeVoteReceived?.Invoke(id, name, choice));
+
+            _connection.On<int>("OptionEliminated", wrongIndex =>
+            {
+                UpgradeStore.EliminatedOptionIndex = wrongIndex;
+                OptionEliminated?.Invoke(wrongIndex);
+            });
+
             _connection.On<int>("GameOver", finalScore =>
             {
                 UpgradeStore.TeamScore = finalScore;
                 GameOverReceived?.Invoke(finalScore);
             });
-            _connection.On<int>("OptionEliminated", wrongIndex =>
+
+            _connection.On<int, int>("Victory", (finalScore, livesLeft) =>
             {
-                UpgradeStore.EliminatedOptionIndex = wrongIndex;
-                OptionEliminated?.Invoke(wrongIndex);
+                UpgradeStore.TeamScore = finalScore;
+                UpgradeStore.TeamLives = livesLeft;
+                VictoryReceived?.Invoke(finalScore, livesLeft);
             });
 
             await _connection.StartAsync();
@@ -150,12 +160,16 @@ public static class GameConnection
 
     public static Task StartUpgradeVoteAsync(int option1Id, int option2Id) =>
         _connection?.InvokeAsync("StartUpgradeVote", option1Id, option2Id) ?? Task.CompletedTask;
-    public static Task TriggerGameOverAsync(int finalScore) =>
-    _connection?.InvokeAsync("TriggerGameOver", finalScore) ?? Task.CompletedTask;
 
     public static Task SubmitUpgradeVoteAsync(int choiceIndex) =>
         _connection?.InvokeAsync("SubmitUpgradeVote", choiceIndex) ?? Task.CompletedTask;
 
     public static Task EliminateOptionAsync(int wrongIndex) =>
         _connection?.InvokeAsync("EliminateOption", wrongIndex) ?? Task.CompletedTask;
+
+    public static Task TriggerGameOverAsync(int finalScore) =>
+        _connection?.InvokeAsync("TriggerGameOver", finalScore) ?? Task.CompletedTask;
+
+    public static Task TriggerVictoryAsync(int finalScore, int livesLeft) =>
+        _connection?.InvokeAsync("TriggerVictory", finalScore, livesLeft) ?? Task.CompletedTask;
 }

@@ -43,7 +43,7 @@ public partial class MainView : UserControl
         Avalonia.Threading.Dispatcher.UIThread.Post(ShowGameOver);
     }
 
-    private void OnVictoryReceived(int _, int _)
+    private void OnVictoryReceived(int finalScore, int livesLeft)
     {
         Avalonia.Threading.Dispatcher.UIThread.Post(ShowVictory);
     }
