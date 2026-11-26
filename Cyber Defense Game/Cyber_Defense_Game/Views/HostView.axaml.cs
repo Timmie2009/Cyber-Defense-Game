@@ -13,6 +13,8 @@ namespace Cyber_Defense_Game.Views;
 public partial class HostView : UserControl
 {
     private readonly MainView? _main;
+    private bool _lobbyOpen;
+    private int _playerCount;
 
     public HostView()
     {
@@ -44,20 +46,35 @@ public partial class HostView : UserControl
 
     private void OnPlayersUpdated(List<string> players)
     {
+        var snapshot = players.ToList();
         Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            PlayerList.ItemsSource = players.ToList());
+        {
+            if (!_lobbyOpen)
+                return;
+
+            if (snapshot.Count > _playerCount)
+                BrowserMusic.PlayEffectSafe("player_join");
+            else if (snapshot.Count < _playerCount)
+                BrowserMusic.PlayEffectSafe("player_leave");
+
+            _playerCount = snapshot.Count;
+            PlayerList.ItemsSource = snapshot;
+        });
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        _lobbyOpen = true;
+        var players = GameConnection.CurrentPlayers.ToList();
+        _playerCount = players.Count;
+        PlayerList.ItemsSource = players;
 
         GameState.ImageChanged -= OnImageChanged;
         GameState.ImageChanged += OnImageChanged;
 
         GameConnection.PlayersUpdated -= OnPlayersUpdated;
         GameConnection.PlayersUpdated += OnPlayersUpdated;
-        OnPlayersUpdated(GameConnection.CurrentPlayers);
 
         LoadImage();
 
@@ -66,6 +83,8 @@ public partial class HostView : UserControl
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _lobbyOpen = false;
+        BrowserMusic.StopSafe();
         GameState.ImageChanged -= OnImageChanged;
         GameConnection.PlayersUpdated -= OnPlayersUpdated;
         GameConnection.IsHost = true;
@@ -104,7 +123,6 @@ public partial class HostView : UserControl
 
     private void Back_Click(object? sender, RoutedEventArgs e)
     {
-        BrowserMusic.StopSafe();
         _main?.ShowMenu();
     }
 }

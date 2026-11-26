@@ -36,7 +36,7 @@
                 window.currentQuizAudio = null;
                 window.currentTrackSrc = "";
 
-                window.playQuizTrack = function (src) {
+                window.playQuizTrack = function (src, volume = 1) {
                     // Do not restart if the exact same track is already playing
                     if (window.currentTrackSrc === src && window.currentQuizAudio && !window.currentQuizAudio.paused) {
                         return;
@@ -47,12 +47,58 @@
                     window.currentTrackSrc = src;
                     window.currentQuizAudio = new Audio(src);
                     window.currentQuizAudio.loop = true;
+                    window.currentQuizAudio.volume = volume;
                     window.currentQuizAudio.play().catch(err => console.warn("Audio blocked:", err));
                 };
 
                 window.playHostMusic = function () {
-                    // Change './audio/lobby.mp3' if your teammate used a different lobby filename
-                    window.playQuizTrack('./audio/lobby.mp3');
+                    window.playQuizTrack('./audio/lobby/lobby_music_loop.mp3', 0.75);
+                    window.prepareLobbyEffects();
+                };
+
+                let lobbyAudioContext;
+                let lobbyEffects;
+
+                window.prepareLobbyEffects = function () {
+                    if (!window.AudioContext) return;
+
+                    lobbyAudioContext ??= new AudioContext();
+                    lobbyAudioContext.resume().catch(err => console.warn("Lobby audio blocked:", err));
+                    lobbyEffects ??= new Map(Object.entries({
+                        lobby: ['player_join', 'player_leave', 'game_start'],
+                        interface: ['ui_click', 'ui_hover', 'whoosh'],
+                        losing: ['game_over_breach'],
+                        points: ['answer_correct', 'answer_wrong'],
+                        power_ups: ['powerup_activate', 'powerup_bought', 'powerup_denied', 'powerup_shop_open'],
+                        timer: ['question_appear', 'timer_tick', 'timer_urgent', 'time_up'],
+                        winning: ['Scoreboard_reveal', 'victory_fanfare']
+                    }).flatMap(([folder, names]) => names.map(name => [
+                        name,
+                        fetch(`./audio/${folder}/${name}.mp3`)
+                            .then(response => {
+                                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                return response.arrayBuffer();
+                            })
+                            .then(data => lobbyAudioContext.decodeAudioData(data))
+                            .catch(err => {
+                                console.warn(`Could not load ${name}:`, err);
+                                return null;
+                            })
+                    ])));
+                };
+
+                window.playLobbyEffect = async function (name) {
+                    const buffer = await lobbyEffects?.get(name);
+                    if (!buffer || lobbyAudioContext.state !== 'running') return;
+
+                    const sound = lobbyAudioContext.createBufferSource();
+                    sound.buffer = buffer;
+                    const gain = lobbyAudioContext.createGain();
+                    const volumes = { player_leave: 2.5, ui_hover: 0.18, ui_click: 0.35, timer_tick: 0.35 };
+                    gain.gain.value = volumes[name] ?? 1;
+                    sound.connect(gain);
+                    gain.connect(lobbyAudioContext.destination);
+                    sound.start();
                 };
 
                 window.playDifficultyMusic = function (difficulty) {

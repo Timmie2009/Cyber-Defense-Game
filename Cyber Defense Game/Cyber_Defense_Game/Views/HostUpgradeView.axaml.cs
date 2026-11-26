@@ -31,6 +31,9 @@ public partial class HostUpgradeView : UserControl
         GameConnection.UpgradeVoteReceived += OnVoteReceived;
 
         var (id1, id2) = UpgradeStore.PickTwoAffordable();
+        BrowserMusic.PlayEffectSafe(UpgradeStore.Option1 == null && UpgradeStore.Option2 == null
+            ? "powerup_denied"
+            : "powerup_shop_open");
 
         ScoreStatusText.Text = $"Available Score: {UpgradeStore.TeamScore} pts";
 
@@ -199,6 +202,8 @@ public partial class HostUpgradeView : UserControl
         }
 
         ScoreStatusText.Text = $"Remaining Score: {UpgradeStore.TeamScore} pts";
+        if (winningChoice != 2)
+            BrowserMusic.PlayEffectSafe("powerup_bought");
         ResultPanel.IsVisible = true;
     }
 
