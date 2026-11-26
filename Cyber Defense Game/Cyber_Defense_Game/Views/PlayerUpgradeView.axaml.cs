@@ -25,7 +25,7 @@ public partial class PlayerUpgradeView : UserControl
         if (UpgradeStore.Option1 != null)
         {
             Option1Button.IsVisible = true;
-            Option1Button.Content = $"{UpgradeStore.Option1.Name} ({UpgradeStore.Option1.Cost} pts)";
+            Option1Text.Text = $"{UpgradeStore.Option1.Name} ({UpgradeStore.Option1.Cost} pts)";
         }
         else
         {
@@ -35,7 +35,7 @@ public partial class PlayerUpgradeView : UserControl
         if (UpgradeStore.Option2 != null)
         {
             Option2Button.IsVisible = true;
-            Option2Button.Content = $"{UpgradeStore.Option2.Name} ({UpgradeStore.Option2.Cost} pts)";
+            Option2Text.Text = $"{UpgradeStore.Option2.Name} ({UpgradeStore.Option2.Cost} pts)";
         }
         else
         {

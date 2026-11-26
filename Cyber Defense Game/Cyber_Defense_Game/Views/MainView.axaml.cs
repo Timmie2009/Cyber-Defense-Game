@@ -25,20 +25,32 @@ public partial class MainView : UserControl
     {
         InitializeComponent();
 
-        if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS())
+        SizeChanged += (_, e) =>
         {
-            // ~50% larger UI on landscape mobile phones without affecting Browser or Desktop
-            ContentHost.Width = 850;
-            ContentHost.Height = 480;
-        }
-        else
-        {
-            ContentHost.Width = 1280;
-            ContentHost.Height = 720;
-        }
+            if (e.NewSize.Width <= 0 || e.NewSize.Height <= 0) return;
 
-        ShowMenu();
-        Loaded += MainView_Loaded;
+            if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS() || e.NewSize.Width < 950)
+            {
+                if (e.NewSize.Height > e.NewSize.Width)
+                {
+                    // Portrait mobile browser
+                    ContentHost.Width = 450;
+                    ContentHost.Height = 720;
+                }
+                else
+                {
+                    // Landscape mobile app or mobile browser
+                    ContentHost.Width = 850;
+                    ContentHost.Height = 480;
+                }
+            }
+            else
+            {
+                // Desktop & wide browser
+                ContentHost.Width = 1280;
+                ContentHost.Height = 720;
+            }
+        };
     }
 
     private void OnGameStarted()

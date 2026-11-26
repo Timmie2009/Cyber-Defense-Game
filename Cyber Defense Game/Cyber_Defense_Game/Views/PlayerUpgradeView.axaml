@@ -4,51 +4,71 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Cyber_Defense_Game.Views.PlayerUpgradeView">
-      <DockPanel Margin="20">
+        <Grid RowDefinitions="Auto,*,*,*" Margin="20">
         <TextBlock x:Name="StatusText"
-                   DockPanel.Dock="Top"
-                   Text="Vote for an upgrade!"
-                   FontSize="24"
+                   Grid.Row="0"
+                   Text="Vote for an upgrade or skip to save score!"
+                   FontSize="26"
                    FontWeight="Bold"
+                   TextWrapping="Wrap"
+                   TextAlignment="Center"
                    HorizontalAlignment="Center"
-                   Margin="0,10,0,20" />
+                   Margin="0,10,0,15" />
 
-        <StackPanel Spacing="15" VerticalAlignment="Center">
-            <Button x:Name="Option1Button"
-                    Content="Upgrade 1"
-                    Background="#1E88E5"
-                    Foreground="White"
-                    FontSize="24"
-                    FontWeight="Bold"
-                    Height="90"
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Center"
-                    VerticalContentAlignment="Center"
-                    Click="Option1_Click" />
+        <Button x:Name="Option1Button"
+                Grid.Row="1"
+                Background="#1E88E5"
+                Foreground="White"
+                FontSize="24"
+                FontWeight="Bold"
+                CornerRadius="16"
+                Margin="10"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Click="Option1_Click">
+            <TextBlock x:Name="Option1Text"
+                       Text="Upgrade 1"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center" />
+        </Button>
 
-            <Button x:Name="Option2Button"
-                    Content="Upgrade 2"
-                    Background="#8E24AA"
-                    Foreground="White"
-                    FontSize="24"
-                    FontWeight="Bold"
-                    Height="90"
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Center"
-                    VerticalContentAlignment="Center"
-                    Click="Option2_Click" />
+        <Button x:Name="Option2Button"
+                Grid.Row="2"
+                Background="#8E24AA"
+                Foreground="White"
+                FontSize="24"
+                FontWeight="Bold"
+                CornerRadius="16"
+                Margin="10"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Click="Option2_Click">
+            <TextBlock x:Name="Option2Text"
+                       Text="Upgrade 2"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center" />
+        </Button>
 
-            <Button x:Name="SkipButton"
-                    Content="Skip (Save Score)"
-                    Background="#455A64"
-                    Foreground="White"
-                    FontSize="24"
-                    FontWeight="Bold"
-                    Height="90"
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Center"
-                    VerticalContentAlignment="Center"
-                    Click="Skip_Click" />
-        </StackPanel>
-    </DockPanel>
+        <Button x:Name="SkipButton"
+                Grid.Row="3"
+                Background="#455A64"
+                Foreground="White"
+                FontSize="24"
+                FontWeight="Bold"
+                CornerRadius="16"
+                Margin="10"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Click="Skip_Click">
+            <TextBlock Text="Skip (Save Score)"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center" />
+        </Button>
+    </Grid>
 </UserControl>
