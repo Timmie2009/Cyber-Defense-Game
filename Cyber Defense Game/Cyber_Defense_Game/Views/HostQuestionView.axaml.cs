@@ -16,12 +16,25 @@ public partial class HostQuestionView : UserControl
     private readonly Dictionary<string, (string Name, int AnswerIndex)> _playerAnswers = new();
     private CancellationTokenSource? _timerCts;
     private bool _timeUp;
+    private TopLevel? _attachedTopLevel;
     private bool _roundOverclockActive;
     private QuizQuestion _currentQuestion = QuestionStore.GetCurrentQuestion();
 
     public HostQuestionView()
     {
         InitializeComponent();
+
+        Loaded += (_, _) =>
+        {
+            _attachedTopLevel = TopLevel.GetTopLevel(this);
+            _attachedTopLevel?.AddHandler(KeyDownEvent, OnHostKeyDown, RoutingStrategies.Tunnel, handledEventsToo: true);
+        };
+
+        Unloaded += (_, _) =>
+        {
+            _attachedTopLevel?.RemoveHandler(KeyDownEvent, OnHostKeyDown);
+            _attachedTopLevel = null;
+        };
     }
 
     public HostQuestionView(MainView main) : this() => _main = main;
