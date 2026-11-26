@@ -1,6 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
+using System;
 
 namespace Cyber_Defense_Game.Views;
 
@@ -19,8 +22,19 @@ public partial class VictoryView : UserControl
     {
         base.OnAttachedToVisualTree(e);
         BrowserMusic.StopSafe();
+
         FinalScoreText.Text = $"Final Team Score: {UpgradeStore.TeamScore}";
         LivesText.Text = $"Lives Remaining: {UpgradeStore.TeamLives} / 3";
+
+        try
+        {
+            using var stream = AssetLoader.Open(new Uri("avares://Cyber_Defense_Game/Assets/Victory.png"));
+            VictoryImage.Source = new Bitmap(stream);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Victory.png load warning: {ex.Message}");
+        }
     }
 
     private void BackToMenu_Click(object? sender, RoutedEventArgs e)

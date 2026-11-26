@@ -32,9 +32,15 @@ public partial class MainView : UserControl
 
     private void OnQuestionLoaded(string _)
     {
-        if (!GameConnection.IsHost && ContentHost.Content is PlayerUpgradeView)
+        if (!GameConnection.IsHost)
         {
-            Avalonia.Threading.Dispatcher.UIThread.Post(ShowGame);
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                if (ContentHost.Content is PlayerUpgradeView)
+                {
+                    ShowGame();
+                }
+            });
         }
     }
 

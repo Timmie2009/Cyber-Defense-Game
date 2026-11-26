@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Cyber_Defense_Game.Views.VictoryView">
-   <Grid>
+      <Grid>
         <Border Background="#CC0D1B2A"
                 BorderBrush="#4CAF50"
                 BorderThickness="3"
@@ -14,7 +14,13 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center">
             <StackPanel Spacing="18" HorizontalAlignment="Center">
-                <Image Source="avares://Cyber_Defense_Game/Assets/Victory.png"
+                <TextBlock Text="VICTORY!"
+                           FontSize="46"
+                           FontWeight="Bold"
+                           Foreground="#4CAF50"
+                           HorizontalAlignment="Center" />
+
+                <Image x:Name="VictoryImage"
                        MaxHeight="260"
                        Stretch="Uniform"
                        HorizontalAlignment="Center" />

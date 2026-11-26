@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Avalonia.Input;
 using System.Threading.Tasks;
 
 namespace Cyber_Defense_Game.Views;
@@ -58,7 +59,19 @@ public partial class HostQuestionView : UserControl
     private void OnPlayersUpdated(List<string> _) => UpdateAnsweredCount();
 
     protected override async void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
+    {// Inside OnAttachedToVisualTree:
+     // In OnAttachedToVisualTree:
+        if (TopLevel.GetTopLevel(this) is { } attachTopLevel)
+        {
+            attachTopLevel.KeyDown -= OnHostKeyDown;
+            attachTopLevel.KeyDown += OnHostKeyDown;
+        }
+
+        // In OnDetachedFromVisualTree:
+        if (TopLevel.GetTopLevel(this) is { } detachTopLevel)
+        {
+            detachTopLevel.KeyDown -= OnHostKeyDown;
+        }
         base.OnAttachedToVisualTree(e);
 
         GameConnection.AnswerReceived -= OnAnswerReceived;
@@ -81,7 +94,32 @@ public partial class HostQuestionView : UserControl
 
         StartRound();
     }
+    private async void OnHostKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter) return;
+        e.Handled = true;
 
+        if (!_timeUp)
+        {
+            _timeUp = true;
+            _timerCts?.Cancel();
+
+            int roundScore = _roundOverclockActive ? 200 : 100;
+            UpgradeStore.TeamScore += roundScore;
+            UpdateStatusBadge(false);
+
+            try
+            {
+                await GameConnection.EndRoundAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"EndRound debug warning: {ex.Message}");
+            }
+        }
+
+        NextQuestion_Click(this, new RoutedEventArgs());
+    }
     private async Task SafeLoadQuestionAsync(string questionName)
     {
         try
@@ -239,6 +277,7 @@ public partial class HostQuestionView : UserControl
             return;
         }
 
+        // MUST come BEFORE (UpgradeStore.QuestionsPlayed % 5 == 0)!
         if (UpgradeStore.QuestionIndex >= UpgradeStore.GameQueue.Count)
         {
             _timerCts?.Cancel();
