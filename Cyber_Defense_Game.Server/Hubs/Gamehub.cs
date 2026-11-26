@@ -172,6 +172,11 @@ public class GameHub : Hub
     {
         await Clients.All.SendAsync("GameOver", finalScore);
     }
+
+    public async Task TriggerVictory(int finalScore, int livesLeft)
+    {
+        await Clients.All.SendAsync("Victory", finalScore, livesLeft);
+    }
     private static List<string> GetPlayerList() => Players.Values.ToList();
     private Task BroadcastPlayers() => Clients.All.SendAsync("PlayersUpdated", GetPlayerList());
 }

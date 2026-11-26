@@ -1,0 +1,44 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Cyber_Defense_Game.Views.VictoryView">
+   <Grid>
+        <Border Background="#CC0D1B2A"
+                BorderBrush="#4CAF50"
+                BorderThickness="3"
+                CornerRadius="20"
+                Padding="30"
+                MaxWidth="650"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+            <StackPanel Spacing="18" HorizontalAlignment="Center">
+                <Image Source="avares://Cyber_Defense_Game/Assets/Victory.png"
+                       MaxHeight="260"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center" />
+
+                <TextBlock x:Name="FinalScoreText"
+                           Text="Final Team Score: 0"
+                           FontSize="30"
+                           FontWeight="Bold"
+                           Foreground="#FFD54F"
+                           HorizontalAlignment="Center" />
+
+                <TextBlock x:Name="LivesText"
+                           Text="Lives Remaining: 3 / 3"
+                           FontSize="20"
+                           Foreground="#81C784"
+                           HorizontalAlignment="Center" />
+
+                <Button Content="Back to Menu"
+                        FontSize="22"
+                        FontWeight="Bold"
+                        Padding="24,12"
+                        HorizontalAlignment="Center"
+                        Click="BackToMenu_Click" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

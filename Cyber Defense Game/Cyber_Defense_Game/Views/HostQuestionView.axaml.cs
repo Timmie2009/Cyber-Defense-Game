@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -16,7 +15,6 @@ public partial class HostQuestionView : UserControl
     private readonly Dictionary<string, (string Name, int AnswerIndex)> _playerAnswers = new();
     private CancellationTokenSource? _timerCts;
     private bool _timeUp;
-    private bool _quizFinished;
     private bool _roundOverclockActive;
     private QuizQuestion _currentQuestion = QuestionStore.GetCurrentQuestion();
 
@@ -220,12 +218,6 @@ public partial class HostQuestionView : UserControl
 
     private async void NextQuestion_Click(object? sender, RoutedEventArgs e)
     {
-        if (_quizFinished)
-        {
-            _main?.ShowMenu();
-            return;
-        }
-
         UpgradeStore.EnsureGameQueue();
         if (UpgradeStore.GameQueue.Count == 0) return;
 
@@ -249,16 +241,19 @@ public partial class HostQuestionView : UserControl
 
         if (UpgradeStore.QuestionIndex >= UpgradeStore.GameQueue.Count)
         {
-            _quizFinished = true;
             _timerCts?.Cancel();
             BrowserMusic.StopSafe();
 
-            QuestionTitleText.Text = $"Quiz Complete! Final Team Score: {UpgradeStore.TeamScore}";
-            TimerText.Text = $"Lives Remaining: {UpgradeStore.TeamLives}/3";
-            if (sender is Button btn)
+            try
             {
-                btn.Content = "Back to Menu";
+                await GameConnection.TriggerVictoryAsync(UpgradeStore.TeamScore, UpgradeStore.TeamLives);
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"TriggerVictory warning: {ex.Message}");
+            }
+
+            _main?.ShowVictory();
             return;
         }
 
@@ -327,7 +322,8 @@ public partial class HostQuestionView : UserControl
             $"C ({_currentQuestion.OptionC})",
             $"D ({_currentQuestion.OptionD})"
         };
-string correctLabel = _currentQuestion.CorrectIndex >= 0 && _currentQuestion.CorrectIndex < options.Length
+        string correctLabel = _currentQuestion.CorrectIndex >= 0 && _currentQuestion.CorrectIndex < options.Length
+
 ? options[_currentQuestion.CorrectIndex]
 : "Unknown";
         TimerText.Text = $"{reason} Correct answer: {correctLabel}";

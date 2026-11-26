@@ -43,6 +43,11 @@ public partial class MainView : UserControl
         Avalonia.Threading.Dispatcher.UIThread.Post(ShowGameOver);
     }
 
+    private void OnVictoryReceived(int _, int _)
+    {
+        Avalonia.Threading.Dispatcher.UIThread.Post(ShowVictory);
+    }
+
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -58,6 +63,9 @@ public partial class MainView : UserControl
 
         GameConnection.GameOverReceived -= OnGameOverReceived;
         GameConnection.GameOverReceived += OnGameOverReceived;
+
+        GameConnection.VictoryReceived -= OnVictoryReceived;
+        GameConnection.VictoryReceived += OnVictoryReceived;
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -66,6 +74,7 @@ public partial class MainView : UserControl
         UpgradeStore.UpgradePhaseStarted -= OnUpgradePhaseStarted;
         QuestionStore.QuestionLoaded -= OnQuestionLoaded;
         GameConnection.GameOverReceived -= OnGameOverReceived;
+        GameConnection.VictoryReceived -= OnVictoryReceived;
         base.OnDetachedFromVisualTree(e);
     }
 
@@ -87,13 +96,18 @@ public partial class MainView : UserControl
         ContentHost.Content = new GameOverView(this);
     }
 
+    public void ShowVictory()
+    {
+        ContentHost.Content = new VictoryView(this);
+    }
+
     private async void MainView_Loaded(object? sender, RoutedEventArgs e)
     {
         Loaded -= MainView_Loaded;
 
         try
         {
-            await GameConnection.ConnectAsync("https://cyberquiz.tail9822f1.ts.net");
+            await GameConnection.ConnectAsync("https://ts.net");
         }
         catch (Exception ex)
         {
