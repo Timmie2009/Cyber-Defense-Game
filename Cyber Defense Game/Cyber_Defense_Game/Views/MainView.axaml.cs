@@ -24,8 +24,20 @@ public partial class MainView : UserControl
     public MainView()
     {
         InitializeComponent();
-        ShowMenu();
 
+        if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS())
+        {
+            // ~50% larger UI on landscape mobile phones without affecting Browser or Desktop
+            ContentHost.Width = 850;
+            ContentHost.Height = 480;
+        }
+        else
+        {
+            ContentHost.Width = 1280;
+            ContentHost.Height = 720;
+        }
+
+        ShowMenu();
         Loaded += MainView_Loaded;
     }
 

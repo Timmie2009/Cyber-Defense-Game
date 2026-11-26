@@ -3,8 +3,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:Cyber_Defense_Game.ViewModels"
-             mc:Ignorable="d"
-             d:DesignWidth="800" d:DesignHeight="450"
+ mc:Ignorable="d"
+             d:DesignWidth="1280" d:DesignHeight="720"
              x:Class="Cyber_Defense_Game.Views.MainView"
              x:DataType="vm:MainViewModel">
 
@@ -13,19 +13,23 @@
     </Design.DataContext>
 
     <Grid>
-        <Image Source="avares://Cyber_Defense_Game/Assets/lucid-origin_a_cinematic_photo_of_Playful_3D_cartoon_game_background_cute_glowing_cyber_shiel-0.png"
+        <Image Source="avares://Cyber_Defense_Game/Assets/Background.png"
                Stretch="UniformToFill"
                IsHitTestVisible="False" />
 
-        <ContentControl x:Name="ContentHost" />
+        <Viewbox Stretch="Uniform" StretchDirection="Both">
+            <ContentControl x:Name="ContentHost"
+                            Width="1280"
+                            Height="720" />
+        </Viewbox>
 
-        <TextBlock Text="v1.1.0"
+        <TextBlock Text="v1.3.0"
                    Foreground="Red"
-                   FontSize="24"
+                   FontSize="18"
                    Opacity="0.6"
                    HorizontalAlignment="Right"
                    VerticalAlignment="Bottom"
-                   Margin="20"
+                   Margin="12"
                    IsHitTestVisible="False" />
     </Grid>
 
