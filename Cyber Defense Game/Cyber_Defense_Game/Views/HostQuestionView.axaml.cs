@@ -178,7 +178,18 @@ public partial class HostQuestionView : UserControl
             ActiveBuffText.IsVisible = false;
         }
     }
-
+    private static void SetOptionText(TextBlock target, string text)
+    {
+        target.Text = text;
+        target.FontSize = text.Length switch
+        {
+            > 85 => 14,
+            > 65 => 16,
+            > 45 => 19,
+            > 30 => 22,
+            _ => 25
+        };
+    }
     private async void StartRound()
     {
         _currentQuestion = QuestionStore.GetCurrentQuestion();
@@ -224,13 +235,13 @@ public partial class HostQuestionView : UserControl
             _ => 36
         };
 
-        Border[] borders = { OptionABorder, OptionBBorder, OptionCBorder, OptionDBorder };
+        Control[] borders = { OptionABorder, OptionBBorder, OptionCBorder, OptionDBorder };
         foreach (var b in borders) b.Opacity = 1.0;
 
-        OptionAText.Text = $"A: {_currentQuestion.OptionA}";
-        OptionBText.Text = $"B: {_currentQuestion.OptionB}";
-        OptionCText.Text = $"C: {_currentQuestion.OptionC}";
-        OptionDText.Text = $"D: {_currentQuestion.OptionD}";
+        SetOptionText(OptionAText, $"A: {_currentQuestion.OptionA}");
+        SetOptionText(OptionBText, $"B: {_currentQuestion.OptionB}");
+        SetOptionText(OptionCText, $"C: {_currentQuestion.OptionC}");
+        SetOptionText(OptionDText, $"D: {_currentQuestion.OptionD}");
 
         if (useThreatScanner)
         {
