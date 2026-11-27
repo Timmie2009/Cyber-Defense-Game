@@ -3,7 +3,6 @@
 const is_browser = typeof window != "undefined";
 if (!is_browser) throw new Error(`Expected to be running in a browser`);
 
-
 let currentAudio = null;
 
 function playTrack(src) {
@@ -36,6 +35,7 @@ export function stopHostMusic() {
         currentAudio = null;
     }
 }
+
 
 globalThis.getLobbyCodeFromUrl = function () {
     const params = new URLSearchParams(window.location.search);

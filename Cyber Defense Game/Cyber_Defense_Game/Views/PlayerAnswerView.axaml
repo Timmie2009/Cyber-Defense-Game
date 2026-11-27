@@ -1,0 +1,80 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             x:Class="Cyber_Defense_Game.Views.PlayerAnswerView">
+  <DockPanel Margin="20">
+        <TextBlock x:Name="StatusText"
+                   DockPanel.Dock="Top"
+                   Text="Pick an answer!"
+                   FontSize="24"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   Margin="0,10,0,20" />
+
+        <Grid>
+            <UniformGrid x:Name="AnswerGrid" Rows="2" Columns="2">
+                <Button x:Name="RedButton"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="0"
+                        Margin="10"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"
+                        Click="Red_Click">
+                    <Image Source="avares://Cyber_Defense_Game/Assets/Rood.png"
+                           Stretch="Uniform" />
+                </Button>
+
+                <Button x:Name="GreenButton"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="0"
+                        Margin="10"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"
+                        Click="Green_Click">
+                    <Image Source="avares://Cyber_Defense_Game/Assets/Groen.png"
+                           Stretch="Uniform" />
+                </Button>
+
+                <Button x:Name="BlueButton"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="0"
+                        Margin="10"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"
+                        Click="Blue_Click">
+                    <Image Source="avares://Cyber_Defense_Game/Assets/Blauw.png"
+                           Stretch="Uniform" />
+                </Button>
+
+                <Button x:Name="WhiteButton"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="0"
+                        Margin="10"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"
+                        Click="White_Click">
+                    <Image Source="avares://Cyber_Defense_Game/Assets/Wit.png"
+                           Stretch="Uniform" />
+                </Button>
+            </UniformGrid>
+
+            <Image x:Name="SelectedImage"
+                   IsVisible="False"
+                   Stretch="Uniform"
+                   Margin="20" />
+        </Grid>
+    </DockPanel>
+</UserControl>

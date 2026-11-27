@@ -1,4 +1,5 @@
 
+
 <UserControl xmlns="https:&#47;&#47;github.com&#47;avaloniaui">
 	<DockPanel Margin="20">
 		<StackPanel DockPanel.Dock="Top" Spacing="10" Margin="0,0,0,20">
@@ -52,3 +53,32 @@
 		<Image Name="DisplayImage" Stretch="Uniform" />
 	</DockPanel>
 </UserControl>
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Cyber_Defense_Game.Views"
+             x:Class="Cyber_Defense_Game.Views.HostView"
+             x:DataType="local:HostView">
+    <DockPanel Margin="20">
+        <StackPanel DockPanel.Dock="Top" Spacing="10" Margin="0,0,0,20">
+    <TextBlock Text="Host screen" FontSize="24" HorizontalAlignment="Center" />
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
+        <Button Content="Play" Click="Play_Click" />
+        <Button Content="Back" Click="Back_Click" />
+    </StackPanel>
+</StackPanel>
+
+
+        <!-- Lobby: players on the left -->
+        <StackPanel DockPanel.Dock="Left" Width="200" Margin="0,0,20,0" Spacing="5">
+            <TextBlock Text="Players" FontWeight="Bold" />
+            <ListBox x:Name="PlayerList" />
+        </StackPanel>
+
+
+
+        <!-- The image the host displays -->
+        <Image x:Name="DisplayImage" Stretch="Uniform" />
+    </DockPanel>
+</UserControl>
+

@@ -1,8 +1,12 @@
 
+
 <Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+
+﻿<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
   <PropertyGroup>
     <RootNamespace>Cyber_Defense_Game</RootNamespace>
     <TargetFramework>net10.0-browser</TargetFramework>
+	<JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
@@ -10,8 +14,13 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Browser" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
+    <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" />
+    <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" />
   </ItemGroup>
-
+  <PropertyGroup>
+    <UseSystemResourceKeys>false</UseSystemResourceKeys>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Cyber_Defense_Game\Cyber_Defense_Game.csproj" />
   </ItemGroup>
@@ -19,6 +28,7 @@
   <ItemGroup>
     <StaticWebAssetFingerprintPattern Include="JS" Pattern="*.js" Expression="#[.{fingerprint}]!" />
   </ItemGroup>
+
 
 ﻿<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
 	<PropertyGroup>
@@ -51,4 +61,9 @@
 	<ItemGroup>
 		<Folder Include="wwwroot\audio\" />
 	</ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\audio\" />
+  </ItemGroup>
+
 </Project>

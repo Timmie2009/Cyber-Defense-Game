@@ -2,7 +2,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Cyber_Defense_Game.Views.JoinView">
-    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
         <TextBlock Text="Join screen" FontSize="24" HorizontalAlignment="Center" />
 
 <UserControl xmlns="https:&#47;&#47;github.com&#47;avaloniaui">
@@ -41,9 +41,22 @@
                 HorizontalAlignment="Center" />
 
 
+        <TextBlock Text="Name:" FontSize="12" HorizontalAlignment="Center">
+            <TextBlock.RenderTransform>
+                <TranslateTransform Y="12" />
+            </TextBlock.RenderTransform>
+        </TextBlock>
+
+        <TextBox x:Name="NameInput"
+                 MinWidth="220"
+                 Watermark="Enter your name"
+                 HorizontalAlignment="Center" />
+
+        <Button x:Name="SubmitNameButton" Content="Submit Name" HorizontalAlignment="Center" Click="Submit_Click" />
         <Button Content="Back" HorizontalAlignment="Center" Click="Back_Click" />
     </StackPanel>
 </UserControl>
+
 
 		<TextBlock Name="StatusText" HorizontalAlignment="Center" TextWrapping="Wrap" MaxWidth="320" />
 

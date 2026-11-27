@@ -1,0 +1,103 @@
+name: Build en Deploy Cyber Defense Quiz
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Haal de broncode op
+        uses: actions/checkout@v4
+
+      - name: 2. Installeer .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: 3. Zoek de exacte projectbestanden
+        id: find_projects
+        run: |
+          BROWSER=$(find . -name "*Browser.csproj" | head -n 1)
+          SERVER=$(find . -name "*Server.csproj" | head -n 1)
+          echo "Browser project gevonden: $BROWSER"
+          echo "Server project gevonden: $SERVER"
+          if [ -z "$BROWSER" ] || [ -z "$SERVER" ]; then
+            echo "::error::Kon Browser of Server .csproj niet vinden!"
+            exit 1
+          fi
+          echo "browser=$BROWSER" >> $GITHUB_OUTPUT
+          echo "server=$SERVER" >> $GITHUB_OUTPUT
+
+      - name: 4. Installeer WebAssembly tools en project-workloads
+        run: |
+          dotnet workload install wasm-tools wasm-tools-net10
+          dotnet workload restore "${{ steps.find_projects.outputs.browser }}"
+
+      - name: 5. Voeg SkiaSharp WebAssembly ondersteuning toe en Restore
+        run: |
+          dotnet add "${{ steps.find_projects.outputs.browser }}" package SkiaSharp.NativeAssets.WebAssembly
+          dotnet restore "${{ steps.find_projects.outputs.browser }}"
+          dotnet restore "${{ steps.find_projects.outputs.server }}"
+
+      - name: 6. Publiceer de Avalonia Browser applicatie
+        run: >
+          dotnet publish "${{ steps.find_projects.outputs.browser }}"
+          -c Release
+          -o ./publish-browser
+          --no-restore
+          -p:WasmBuildNative=true
+
+      - name: 7. Publiceer de C# Server applicatie
+        run: >
+          dotnet publish "${{ steps.find_projects.outputs.server }}"
+          -c Release
+          -o ./publish-server
+          --no-restore
+
+      - name: 8. Sla de gebouwde website op
+        uses: actions/upload-artifact@v4
+        with:
+          name: avalonia-wwwroot
+          path: ./publish-browser/wwwroot
+
+      - name: 9. Sla de gebouwde server op
+        uses: actions/upload-artifact@v4
+        with:
+          name: cyber-server
+          path: ./publish-server
+
+  deploy:
+    needs: build
+    runs-on: self-hosted
+
+    steps:
+      - name: 1. Download de nieuwe website- en serverbestanden
+        uses: actions/download-artifact@v4
+        with:
+          path: /root/game/deploy-temp
+
+      - name: 2. Vervang de websitebestanden
+        run: |
+          mkdir -p /root/game/wwwroot
+          rm -rf /root/game/wwwroot/*
+          cp -r /root/game/deploy-temp/avalonia-wwwroot/* /root/game/wwwroot/
+          chmod -R 755 /root/game/wwwroot
+
+      - name: 3. Vervang de serverbestanden
+        run: |
+          mkdir -p /root/game/server
+          rm -rf /root/game/server/*
+          cp -r /root/game/deploy-temp/cyber-server/* /root/game/server/
+          rm -rf /root/game/deploy-temp
+          chmod -R 755 /root/game/server
+
+      - name: 4. Herstart de C# game-server op de Pi
+        run: docker compose -f /root/game/docker-compose.yml up -d --force-recreate server
+
+      - name: 5. Synchroniseer website naar GNS3 cloud-server (student)
+        run: rsync -avz --delete /root/game/wwwroot/ student@100.91.10.1:/root/game/wwwroot/
