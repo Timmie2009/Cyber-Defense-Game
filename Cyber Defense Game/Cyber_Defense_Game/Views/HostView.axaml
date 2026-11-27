@@ -1,12 +1,54 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Cyber_Defense_Game.Views.HostView">
-    <DockPanel Margin="20">
-        <StackPanel DockPanel.Dock="Top" Spacing="10" Margin="0,0,0,20">
-            <TextBlock Text="Host screen" FontSize="24" HorizontalAlignment="Center" />
-            <Button Content="Back" HorizontalAlignment="Center" Click="Back_Click" />
-        </StackPanel>
 
-        <Image x:Name="DisplayImage" Stretch="Uniform" />
-    </DockPanel>
+<UserControl xmlns="https:&#47;&#47;github.com&#47;avaloniaui">
+	<DockPanel Margin="20">
+		<StackPanel DockPanel.Dock="Top" Spacing="10" Margin="0,0,0,20">
+			<TextBlock Text="Host Lobby" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center" />
+			<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
+				<Button Name="PlayButton" Content="Play" />
+				<Button Name="BackButton" Content="Back" />
+			</StackPanel>
+		</StackPanel>
+
+		<StackPanel DockPanel.Dock="Left" Width="200" Margin="0,0,20,0" Spacing="5">
+			<TextBlock Text="Players" FontWeight="Bold" />
+			<ListBox Name="PlayerList" />
+		</StackPanel>
+
+		<Border DockPanel.Dock="Right"
+                Background="#1A1F2E"
+                BorderBrush="#00E5FF"
+                BorderThickness="2"
+                CornerRadius="12"
+                Padding="16"
+                Margin="20,0,0,0"
+                VerticalAlignment="Center">
+			<StackPanel Spacing="10" HorizontalAlignment="Center">
+				<TextBlock Text="JOIN CODE"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           Foreground="#00E5FF"
+                           HorizontalAlignment="Center" />
+				<TextBlock Name="LobbyCodeText"
+                           Text="------"
+                           FontSize="36"
+                           FontWeight="Bold"
+                           LetterSpacing="4"
+                           Foreground="White"
+                           HorizontalAlignment="Center" />
+				<Border Background="White" Padding="8" CornerRadius="8" HorizontalAlignment="Center">
+					<Image Name="QrCodeImage" Width="180" Height="180" Stretch="Uniform" />
+				</Border>
+				<TextBlock Text="Scan QR or enter 6-digit code"
+                           FontSize="12"
+                           Foreground="#B0BEC5"
+                           HorizontalAlignment="Center" />
+				<TextBlock Text="https:&#47;&#47;cyberquiz.tail9822f1.ts.net&#47;"
+                           FontSize="10"
+                           Foreground="#607D8B"
+                           HorizontalAlignment="Center" />
+			</StackPanel>
+		</Border>
+
+		<Image Name="DisplayImage" Stretch="Uniform" />
+	</DockPanel>
 </UserControl>

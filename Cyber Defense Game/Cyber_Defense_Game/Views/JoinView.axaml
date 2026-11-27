@@ -1,17 +1,64 @@
+
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Cyber_Defense_Game.Views.JoinView">
     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
         <TextBlock Text="Join screen" FontSize="24" HorizontalAlignment="Center" />
 
-        <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center">
-            <Button Content="Image 1" Width="120" Height="50" Click="Image1_Click" />
-            <Button Content="Image 2" Width="120" Height="50" Click="Image2_Click" />
-            <Button Content="Image 3" Width="120" Height="50" Click="Image3_Click" />
-        </StackPanel>
+<UserControl xmlns="https:&#47;&#47;github.com&#47;avaloniaui">
+	<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+		<TextBlock Text="Join Lobby" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center" />
 
-        <TextBlock x:Name="StatusText" HorizontalAlignment="Center" />
+		<StackPanel Spacing="6" HorizontalAlignment="Center">
+			<TextBlock Text="6-Digit Lobby Code:" FontSize="12" HorizontalAlignment="Center" />
+			<StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+				<TextBox Name="CodeInput"
+                         Width="150"
+                         MaxLength="6"
+                         FontSize="20"
+                         FontWeight="Bold"
+                         TextAlignment="Center"
+                         Watermark="123456" />
+				<Button Name="ScanQrButton"
+                        Content="Scan QR Code"
+                        Height="38" />
+			</StackPanel>
+		</StackPanel>
+
+
+		<StackPanel Spacing="6" HorizontalAlignment="Center">
+			<TextBlock Text="Your Name:" FontSize="12" HorizontalAlignment="Center" />
+			<TextBox Name="NameInput"
+                     MinWidth="260"
+                     Watermark="Enter your name"
+                     HorizontalAlignment="Center" />
+		</StackPanel>
+
+		<Button Name="SubmitNameButton"
+                Content="Join Game"
+                Width="260"
+                HorizontalContentAlignment="Center"
+                HorizontalAlignment="Center" />
+
 
         <Button Content="Back" HorizontalAlignment="Center" Click="Back_Click" />
     </StackPanel>
 </UserControl>
+
+		<TextBlock Name="StatusText" HorizontalAlignment="Center" TextWrapping="Wrap" MaxWidth="320" />
+
+		<StackPanel Name="LobbyControlsPanel"
+                    IsVisible="False"
+                    Orientation="Horizontal"
+                    Spacing="15"
+                    HorizontalAlignment="Center"
+                    Margin="0,10,0,0">
+			<Button Name="Image1Button" Content="Image 1" Width="110" Height="45" />
+			<Button Name="Image2Button" Content="Image 2" Width="110" Height="45" />
+			<Button Name="Image3Button" Content="Image 3" Width="110" Height="45" />
+		</StackPanel>
+
+		<Button Name="BackButton" Content="Back" HorizontalAlignment="Center" />
+	</StackPanel>
+</UserControl>
+
