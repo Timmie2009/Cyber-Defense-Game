@@ -30,6 +30,7 @@ public class GameHub : Hub
     private static readonly ConcurrentDictionary<string, string> ConnectionToLobby = new();
     private static readonly object FileLock = new();
     private static readonly string QuestionsFolder = Path.Combine(AppContext.BaseDirectory, "data", "questions");
+    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
     static GameHub()
     {
@@ -85,7 +86,7 @@ public class GameHub : Hub
         {
             Directory.CreateDirectory(QuestionsFolder);
             var path = Path.Combine(QuestionsFolder, $"{GetSafeFileName(question.Title)}.json");
-            var json = JsonSerializer.Serialize(question, new JsonSerializerOptions { WriteIndented = true });
+            var json = JsonSerializer.Serialize(question, JsonOptions);
             File.WriteAllText(path, json);
         }
     }

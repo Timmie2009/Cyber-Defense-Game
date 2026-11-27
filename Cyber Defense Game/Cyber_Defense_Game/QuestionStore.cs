@@ -44,6 +44,7 @@ public static class QuestionStore
         "Questions");
 
     private static readonly List<QuizQuestion> _questions = new();
+    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
     public static string CurrentQuestionName { get; private set; } = "Sky Color";
     public static event Action? QuestionsChanged;
@@ -102,12 +103,10 @@ public static class QuestionStore
 
         if (existingIndex >= 0)
         {
-            // Keep its original position in the list when editing
             _questions[existingIndex] = question;
         }
         else
         {
-            // Append newly created questions to the bottom
             _questions.Add(question);
         }
 
@@ -140,7 +139,7 @@ public static class QuestionStore
         {
             Directory.CreateDirectory(QuestionsFolder);
             var path = Path.Combine(QuestionsFolder, $"{GetSafeFileName(question.Title)}.json");
-            var json = JsonSerializer.Serialize(question, new JsonSerializerOptions { WriteIndented = true });
+            var json = JsonSerializer.Serialize(question, JsonOptions);
             File.WriteAllText(path, json);
         }
         catch { }
