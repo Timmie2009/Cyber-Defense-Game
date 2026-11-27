@@ -5,57 +5,57 @@
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
         <TextBlock Text="Join screen" FontSize="24" HorizontalAlignment="Center" />
 
-<UserControl xmlns="https:&#47;&#47;github.com&#47;avaloniaui">
-	<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
-		<TextBlock Text="Join Lobby" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center" />
+			<UserControl>
+				<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+					<TextBlock Text="Join Lobby" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center" />
 
-		<StackPanel Spacing="6" HorizontalAlignment="Center">
-			<TextBlock Text="6-Digit Lobby Code:" FontSize="12" HorizontalAlignment="Center" />
-			<StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-				<TextBox Name="CodeInput"
-                         Width="150"
-                         MaxLength="6"
-                         FontSize="20"
-                         FontWeight="Bold"
-                         TextAlignment="Center"
-                         Watermark="123456" />
-				<Button Name="ScanQrButton"
-                        Content="Scan QR Code"
-                        Height="38" />
-			</StackPanel>
-		</StackPanel>
-
-
-		<StackPanel Spacing="6" HorizontalAlignment="Center">
-			<TextBlock Text="Your Name:" FontSize="12" HorizontalAlignment="Center" />
-			<TextBox Name="NameInput"
-                     MinWidth="260"
-                     Watermark="Enter your name"
-                     HorizontalAlignment="Center" />
-		</StackPanel>
-
-		<Button Name="SubmitNameButton"
-                Content="Join Game"
-                Width="260"
-                HorizontalContentAlignment="Center"
-                HorizontalAlignment="Center" />
+					<StackPanel Spacing="6" HorizontalAlignment="Center">
+						<TextBlock Text="6-Digit Lobby Code:" FontSize="12" HorizontalAlignment="Center" />
+						<StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+							<TextBox Name="CodeInput"
+									 Width="150"
+									 MaxLength="6"
+									 FontSize="20"
+									 FontWeight="Bold"
+									 TextAlignment="Center"
+									 Watermark="123456" />
+							<Button Name="ScanQrButton"
+									Content="Scan QR Code"
+									Height="38" />
+						</StackPanel>
+					</StackPanel>
 
 
-        <TextBlock Text="Name:" FontSize="12" HorizontalAlignment="Center">
-            <TextBlock.RenderTransform>
-                <TranslateTransform Y="12" />
-            </TextBlock.RenderTransform>
-        </TextBlock>
+					<StackPanel Spacing="6" HorizontalAlignment="Center">
+						<TextBlock Text="Your Name:" FontSize="12" HorizontalAlignment="Center" />
+						<TextBox Name="NameInput"
+								 MinWidth="260"
+								 Watermark="Enter your name"
+								 HorizontalAlignment="Center" />
+					</StackPanel>
 
-        <TextBox x:Name="NameInput"
-                 MinWidth="220"
-                 Watermark="Enter your name"
-                 HorizontalAlignment="Center" />
+					<Button Name="SubmitNameButton"
+							Content="Join Game"
+							Width="260"
+							HorizontalContentAlignment="Center"
+							HorizontalAlignment="Center" />
 
-        <Button x:Name="SubmitNameButton" Content="Submit Name" HorizontalAlignment="Center" Click="Submit_Click" />
-        <Button Content="Back" HorizontalAlignment="Center" Click="Back_Click" />
-    </StackPanel>
-</UserControl>
+
+					<TextBlock Text="Name:" FontSize="12" HorizontalAlignment="Center">
+						<TextBlock.RenderTransform>
+							<TranslateTransform Y="12" />
+						</TextBlock.RenderTransform>
+					</TextBlock>
+
+					<TextBox x:Name="NameInput"
+							 MinWidth="220"
+							 Watermark="Enter your name"
+							 HorizontalAlignment="Center" />
+
+					<Button x:Name="SubmitNameButton" Content="Submit Name" HorizontalAlignment="Center" Click="Submit_Click" />
+					<Button Content="Back" HorizontalAlignment="Center" Click="Back_Click" />
+				</StackPanel>
+			</UserControl>
 
 
 		<TextBlock Name="StatusText" HorizontalAlignment="Center" TextWrapping="Wrap" MaxWidth="320" />

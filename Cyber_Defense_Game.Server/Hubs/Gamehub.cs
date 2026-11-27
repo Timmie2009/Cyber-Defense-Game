@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
 using System.Text.Json;
 
 namespace Cyber_Defense_Game.Server.Hubs;
@@ -16,15 +17,37 @@ public class QuizQuestion
     public string Difficulty { get; set; } = "Normal";
 }
 
+public class LobbyRoom
+{
+    public string Code { get; init; } = string.Empty;
+    public string HostConnectionId { get; set; } = string.Empty;
+    public ConcurrentDictionary<string, string> Players { get; } = new();
+}
+
 public class GameHub : Hub
 {
-    private static readonly ConcurrentDictionary<string, string> Players = new();
+    private static readonly ConcurrentDictionary<string, LobbyRoom> Lobbies = new();
+    private static readonly ConcurrentDictionary<string, string> ConnectionToLobby = new();
     private static readonly object FileLock = new();
     private static readonly string QuestionsFolder = Path.Combine(AppContext.BaseDirectory, "data", "questions");
 
     static GameHub()
     {
         EnsureDefaultQuestion();
+    }
+
+    private static string LobbyGroup(string code) => $"lobby_{code}";
+    private static string HostGroup(string code) => $"lobby_{code}_host";
+
+    private static string GenerateUniqueCode()
+    {
+        for (int i = 0; i < 100; i++)
+        {
+            string code = RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
+            if (!Lobbies.ContainsKey(code))
+                return code;
+        }
+        return RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
     }
 
     private static string GetSafeFileName(string title)
@@ -73,7 +96,6 @@ public class GameHub : Hub
         {
             Directory.CreateDirectory(QuestionsFolder);
             var list = new List<QuizQuestion>();
-
             var orderedFiles = Directory.EnumerateFiles(QuestionsFolder, "*.json")
                 .OrderBy(File.GetCreationTimeUtc);
 
@@ -96,87 +118,156 @@ public class GameHub : Hub
         await Clients.All.SendAsync("QuestionSaved", question);
     }
 
-    public async Task LoadQuestion(string questionName)
-    {
-        await Clients.All.SendAsync("QuestionLoaded", questionName);
-    }
-
     public async Task DeleteQuestion(string questionName)
     {
         lock (FileLock)
         {
             var path = Path.Combine(QuestionsFolder, $"{GetSafeFileName(questionName)}.json");
             if (File.Exists(path))
-            {
                 File.Delete(path);
-            }
         }
         await Clients.All.SendAsync("QuestionDeleted", questionName);
     }
 
+    public async Task<string> RegisterAsHost()
+    {
+        await LeaveCurrentLobbyAsync();
+
+        string code = GenerateUniqueCode();
+        var room = new LobbyRoom
+        {
+            Code = code,
+            HostConnectionId = Context.ConnectionId
+        };
+
+        Lobbies[code] = room;
+        ConnectionToLobby[Context.ConnectionId] = code;
+
+        await Groups.AddToGroupAsync(Context.ConnectionId, LobbyGroup(code));
+        await Groups.AddToGroupAsync(Context.ConnectionId, HostGroup(code));
+        await Clients.Caller.SendAsync("PlayersUpdated", new List<string>());
+
+        return code;
+    }
+
+    public async Task<bool> JoinLobby(string code, string name)
+    {
+        string cleanCode = (code ?? string.Empty).Trim();
+        if (cleanCode.Length != 6 || !Lobbies.TryGetValue(cleanCode, out var room))
+            return false;
+
+        await LeaveCurrentLobbyAsync();
+
+        string cleanName = string.IsNullOrWhiteSpace(name) ? "Player" : name.Trim();
+        room.Players[Context.ConnectionId] = cleanName;
+        ConnectionToLobby[Context.ConnectionId] = cleanCode;
+
+        await Groups.AddToGroupAsync(Context.ConnectionId, LobbyGroup(cleanCode));
+        await BroadcastPlayersAsync(room);
+        return true;
+    }
+
+    public async Task LoadQuestion(string questionName)
+    {
+        if (ConnectionToLobby.TryGetValue(Context.ConnectionId, out var code))
+            await Clients.Group(LobbyGroup(code)).SendAsync("QuestionLoaded", questionName);
+    }
+
     public async Task EndRound()
     {
-        await Clients.All.SendAsync("RoundEnded");
+        if (ConnectionToLobby.TryGetValue(Context.ConnectionId, out var code))
+            await Clients.Group(LobbyGroup(code)).SendAsync("RoundEnded");
     }
 
     public async Task StartUpgradeVote(int option1Id, int option2Id)
     {
-        await Clients.All.SendAsync("UpgradeVoteStarted", option1Id, option2Id);
+        if (ConnectionToLobby.TryGetValue(Context.ConnectionId, out var code))
+            await Clients.Group(LobbyGroup(code)).SendAsync("UpgradeVoteStarted", option1Id, option2Id);
     }
 
     public async Task SubmitUpgradeVote(int choiceIndex)
     {
-        var name = Players.GetValueOrDefault(Context.ConnectionId, "Unknown");
-        await Clients.Group("hosts").SendAsync("UpgradeVoteReceived", Context.ConnectionId, name, choiceIndex);
+        if (ConnectionToLobby.TryGetValue(Context.ConnectionId, out var code) &&
+            Lobbies.TryGetValue(code, out var room))
+        {
+            var name = room.Players.GetValueOrDefault(Context.ConnectionId, "Unknown");
+            await Clients.Group(HostGroup(code)).SendAsync("UpgradeVoteReceived", Context.ConnectionId, name, choiceIndex);
+        }
     }
 
     public async Task EliminateOption(int wrongIndex)
     {
-        await Clients.All.SendAsync("OptionEliminated", wrongIndex);
+        if (ConnectionToLobby.TryGetValue(Context.ConnectionId, out var code))
+            await Clients.Group(LobbyGroup(code)).SendAsync("OptionEliminated", wrongIndex);
     }
 
-    public async Task JoinLobby(string name)
+    public async Task ChangeImage(int imageNumber)
     {
-        Players[Context.ConnectionId] = name;
-        await BroadcastPlayers();
+        if (ConnectionToLobby.TryGetValue(Context.ConnectionId, out var code))
+            await Clients.Group(LobbyGroup(code)).SendAsync("ImageChanged", imageNumber);
     }
-
-    public async Task ChangeImage(int imageNumber) =>
-        await Clients.All.SendAsync("ImageChanged", imageNumber);
 
     public async Task SubmitAnswer(int answer)
     {
-        var name = Players.GetValueOrDefault(Context.ConnectionId, "Unknown");
-        await Clients.Group("hosts").SendAsync("AnswerReceived", Context.ConnectionId, name, answer);
+        if (ConnectionToLobby.TryGetValue(Context.ConnectionId, out var code) &&
+            Lobbies.TryGetValue(code, out var room))
+        {
+            var name = room.Players.GetValueOrDefault(Context.ConnectionId, "Unknown");
+            await Clients.Group(HostGroup(code)).SendAsync("AnswerReceived", Context.ConnectionId, name, answer);
+        }
     }
 
-    public async Task RegisterAsHost()
+    public async Task StartGame()
     {
-        await Groups.AddToGroupAsync(Context.ConnectionId, "hosts");
-        await Clients.Caller.SendAsync("PlayersUpdated", GetPlayerList());
+        if (ConnectionToLobby.TryGetValue(Context.ConnectionId, out var code))
+            await Clients.Group(LobbyGroup(code)).SendAsync("GameStarted");
     }
 
-    public async Task StartGame() =>
-        await Clients.All.SendAsync("GameStarted");
-
-    public async Task NextQuestion() =>
-        await Clients.All.SendAsync("QuestionChanged");
-
-    public override async Task OnDisconnectedAsync(Exception? exception)
+    public async Task NextQuestion()
     {
-        Players.TryRemove(Context.ConnectionId, out _);
-        await BroadcastPlayers();
-        await base.OnDisconnectedAsync(exception);
+        if (ConnectionToLobby.TryGetValue(Context.ConnectionId, out var code))
+            await Clients.Group(LobbyGroup(code)).SendAsync("QuestionChanged");
     }
+
     public async Task TriggerGameOver(int finalScore)
     {
-        await Clients.All.SendAsync("GameOver", finalScore);
+        if (ConnectionToLobby.TryGetValue(Context.ConnectionId, out var code))
+            await Clients.Group(LobbyGroup(code)).SendAsync("GameOver", finalScore);
     }
 
     public async Task TriggerVictory(int finalScore, int livesLeft)
     {
-        await Clients.All.SendAsync("Victory", finalScore, livesLeft);
+        if (ConnectionToLobby.TryGetValue(Context.ConnectionId, out var code))
+            await Clients.Group(LobbyGroup(code)).SendAsync("Victory", finalScore, livesLeft);
     }
-    private static List<string> GetPlayerList() => Players.Values.ToList();
-    private Task BroadcastPlayers() => Clients.All.SendAsync("PlayersUpdated", GetPlayerList());
+
+    public override async Task OnDisconnectedAsync(Exception? exception)
+    {
+        await LeaveCurrentLobbyAsync();
+        await base.OnDisconnectedAsync(exception);
+    }
+
+    private async Task LeaveCurrentLobbyAsync()
+    {
+        if (!ConnectionToLobby.TryRemove(Context.ConnectionId, out var oldCode))
+            return;
+
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, LobbyGroup(oldCode));
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, HostGroup(oldCode));
+
+        if (Lobbies.TryGetValue(oldCode, out var room))
+        {
+            if (room.HostConnectionId == Context.ConnectionId)
+            {
+                Lobbies.TryRemove(oldCode, out _);
+            }
+            else if (room.Players.TryRemove(Context.ConnectionId, out _))
+            {
+                await BroadcastPlayersAsync(room);
+            }
+        }
+    }
+
+    private Task BroadcastPlayersAsync(LobbyRoom room) =>
+        Clients.Group(LobbyGroup(room.Code)).SendAsync("PlayersUpdated", room.Players.Values.ToList());
 }

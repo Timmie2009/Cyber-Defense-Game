@@ -1,17 +1,4 @@
-
-
-﻿using Avalonia.Controls;
-
-﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Interactivity;
-using Avalonia.Input;
-using System;
-using System.Runtime.InteropServices.JavaScript;
-using System.Runtime.Versioning;
-
-
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -19,7 +6,6 @@ using System;
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
-
 
 namespace Cyber_Defense_Game.Views;
 
@@ -155,8 +141,6 @@ public partial class MainView : UserControl
     {
         Loaded -= MainView_Loaded;
 
-
-        // If opened via scanning the Host QR code (?code=123456), jump straight to JoinView
         string? urlCode = BrowserInput.GetUrlLobbyCode();
         if (!string.IsNullOrWhiteSpace(urlCode) && urlCode.Length == 6)
         {
@@ -168,17 +152,11 @@ public partial class MainView : UserControl
         try
         {
             await GameConnection.ConnectAsync(GameConnection.DefaultServerUrl);
-
-        try
-        {
-            await GameConnection.ConnectAsync("https://ts.net");
-
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Initial SignalR connect warning: {ex}");
         }
-
     }
 
     public void ShowMenu()
@@ -274,7 +252,6 @@ public static partial class BrowserInput
     public static string? AskName(string message, string defaultValue = "")
     {
         if (OperatingSystem.IsBrowser())
-
             return Prompt(message, defaultValue);
         return null;
     }
@@ -305,16 +282,3 @@ public static partial class BrowserInput
     [JSImport("globalThis.scanLobbyQrCode")]
     private static partial Task<string?> ScanQrJs();
 }
-
-
-        {
-            return Prompt(message, defaultValue);
-        }
-        return null;
-    }
-
-    [SupportedOSPlatform("browser")]
-    [JSImport("globalThis.prompt")]
-    private static partial string? Prompt(string message, string defaultValue);
-}
-

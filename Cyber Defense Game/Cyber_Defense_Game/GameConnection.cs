@@ -7,9 +7,13 @@ namespace Cyber_Defense_Game;
 
 public static class GameConnection
 {
-    public const string ClientVersion = "v1.3.0";
+    public const string ClientVersion = "v1.4.0";
+    public static readonly string DefaultServerUrl = "https://" + "cyberquiz.tail9822f1" + ".ts.net";
 
     public static bool IsHost { get; set; }
+    public static string CurrentLobbyCode { get; set; } = string.Empty;
+    public static string PendingJoinCode { get; set; } = string.Empty;
+
     public static event Action? QuestionChanged;
 
     private static HubConnection? _connection;
@@ -27,9 +31,14 @@ public static class GameConnection
     public static event Action<List<string>>? PlayersUpdated;
     public static event Action<string, string, int>? AnswerReceived;
 
-    public static Task ConnectAsync(string serverUrl)
+    public static Task ConnectAsync(string? serverUrl = null)
     {
-        if (_connectTask != null)
+        serverUrl ??= DefaultServerUrl;
+
+        if (_connection != null && _connection.State == HubConnectionState.Connected)
+            return Task.CompletedTask;
+
+        if (_connectTask != null && !_connectTask.IsFaulted)
             return _connectTask;
 
         _connectTask = ConnectInternalAsync(serverUrl);
@@ -48,7 +57,6 @@ public static class GameConnection
             _connection.On<int>("ImageChanged", n => GameState.SelectedImage = n);
             _connection.On<List<string>>("PlayersUpdated", p =>
             {
-                Console.WriteLine($"PlayersUpdated received: {p?.Count ?? 0} players");
                 CurrentPlayers = p ?? new List<string>();
                 PlayersUpdated?.Invoke(CurrentPlayers);
             });
@@ -56,7 +64,6 @@ public static class GameConnection
                 (id, name, answer) => AnswerReceived?.Invoke(id, name, answer));
 
             _connection.On("GameStarted", () => GameStarted?.Invoke());
-
             _connection.On("QuestionChanged", () => QuestionChanged?.Invoke());
 
             _connection.On<QuizQuestion>("QuestionSaved", q =>
@@ -128,11 +135,27 @@ public static class GameConnection
         }
     }
 
-    public static Task JoinLobbyAsync(string name) =>
-        _connection?.InvokeAsync("JoinLobby", name) ?? Task.CompletedTask;
+    public static async Task<string> RegisterAsHostAsync()
+    {
+        if (_connection == null)
+            throw new InvalidOperationException("Not connected to server.");
 
-    public static Task RegisterAsHostAsync() =>
-        _connection?.InvokeAsync("RegisterAsHost") ?? Task.CompletedTask;
+        CurrentPlayers = new List<string>();
+        string code = await _connection.InvokeAsync<string>("RegisterAsHost");
+        CurrentLobbyCode = code;
+        return code;
+    }
+
+    public static async Task<bool> JoinLobbyAsync(string code, string name)
+    {
+        if (_connection == null)
+            throw new InvalidOperationException("Not connected to server.");
+
+        bool joined = await _connection.InvokeAsync<bool>("JoinLobby", code, name);
+        if (joined)
+            CurrentLobbyCode = code;
+        return joined;
+    }
 
     public static Task SubmitAnswerAsync(int answer) =>
         _connection?.InvokeAsync("SubmitAnswer", answer) ?? Task.CompletedTask;

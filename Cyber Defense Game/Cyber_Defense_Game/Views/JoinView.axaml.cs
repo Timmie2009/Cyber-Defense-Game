@@ -1,45 +1,17 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-
 using Avalonia.Layout;
 using Avalonia.Media;
 using System;
 using System.Linq;
-
-
-using System;
-
+using System.Reflection.Metadata;
 
 namespace Cyber_Defense_Game.Views;
 
 public partial class JoinView : UserControl
 {
     private readonly MainView? _main;
-    private string _enteredName = string.Empty;
-
-    public JoinView()
-    {
-        InitializeComponent();
-        NameInput.TextChanged += (_, _) => _enteredName = NameInput.Text ?? string.Empty;
-
-        NameInput.PointerPressed += (_, _) =>
-        {
-            NameInput.Focus();
-
-            if (OperatingSystem.IsBrowser() && string.IsNullOrWhiteSpace(NameInput.Text))
-            {
-                var prompted = BrowserInput.AskName("Enter your player name:", _enteredName);
-                if (!string.IsNullOrWhiteSpace(prompted))
-                {
-                    NameInput.Text = prompted.Trim();
-                    _enteredName = prompted.Trim();
-                }
-            }
-        };
-    }
-
-
     private string _enteredName = string.Empty;
     private string _enteredCode = string.Empty;
 
@@ -220,8 +192,6 @@ public partial class JoinView : UserControl
         };
     }
 
-
-    public JoinView() => InitializeComponent();
     public JoinView(MainView main) : this() => _main = main;
 
     private async void ScanQr_Click(object? sender, RoutedEventArgs e)
@@ -275,14 +245,6 @@ public partial class JoinView : UserControl
 
     private async void Select(int index)
     {
-
-
-        GameState.SelectedImage = index;
-        StatusText.Text = $"Host image set to {index}";
-    }
-
-    private void Back_Click(object? sender, RoutedEventArgs e) => _main?.ShowMenu();
-
         try
         {
             await GameConnection.ChangeImageAsync(index);
@@ -296,23 +258,6 @@ public partial class JoinView : UserControl
         }
     }
 
-
-        try
-        {
-            await GameConnection.ChangeImageAsync(index);
-
-            StatusText.Text = index == 2
-                ? "🚨 ALERT: Björn heeft de frikandel gestolen! 🌭"
-                : $"Image {index} sent to server!";
-        }
-        catch (Exception ex)
-        {
-            StatusText.Text = $"Connection failed: {ex.Message}";
-            Console.WriteLine(ex.ToString());
-        }
-    }
-
-
     private void Back_Click(object? sender, RoutedEventArgs e)
     {
         _main?.ShowMenu();
@@ -320,7 +265,6 @@ public partial class JoinView : UserControl
 
     private async void Submit_Click(object? sender, RoutedEventArgs e)
     {
-
         _submitNameButton.Focus();
 
         string code = !string.IsNullOrWhiteSpace(_codeInput.Text)
@@ -335,12 +279,6 @@ public partial class JoinView : UserControl
 
         string playerName = !string.IsNullOrWhiteSpace(_nameInput.Text)
             ? _nameInput.Text.Trim()
-
-        SubmitNameButton.Focus();
-
-        string playerName = !string.IsNullOrWhiteSpace(NameInput.Text)
-            ? NameInput.Text.Trim()
-
             : _enteredName.Trim();
 
         if (OperatingSystem.IsBrowser() && string.IsNullOrWhiteSpace(playerName))
@@ -349,11 +287,7 @@ public partial class JoinView : UserControl
             if (!string.IsNullOrWhiteSpace(prompted))
             {
                 playerName = prompted.Trim();
-
                 _nameInput.Text = playerName;
-
-                NameInput.Text = playerName;
-
             }
         }
 
@@ -363,10 +297,9 @@ public partial class JoinView : UserControl
         try
         {
             GameConnection.IsHost = false;
-
-
-await GameConnection.ConnectAsync(GameConnection.DefaultServerUrl);
-            bool ok = await GameConnection.JoinLobbyAsync(code, playerName);
+            await GameConnection.ConnectAsync(GameConnection.DefaultServerUrl);
+          
+bool ok = await GameConnection.JoinLobbyAsync(code, playerName);
             if (!ok)
             {
                 _statusText.Text = $"Lobby '{code}' not found. Check the 6-digit code and try again.";
@@ -380,16 +313,4 @@ await GameConnection.ConnectAsync(GameConnection.DefaultServerUrl);
             _statusText.Text = $"Connection failed: {ex.Message}";
         }
     }
-
 }
-           await GameConnection.ConnectAsync("https://cyberquiz.tail9822f1.ts.net");
-            await GameConnection.JoinLobbyAsync(playerName);
-            StatusText.Text = $"Joined the lobby as {playerName}!";
-        }
-        catch (Exception ex)
-        {
-            StatusText.Text = $"Connection failed: {ex.Message}";
-        }
-    }
-}
-

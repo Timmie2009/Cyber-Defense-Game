@@ -6,15 +6,15 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using System;
+
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Reflection;
+using System.Reflection.Metadata;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
-
-
-using System.Threading.Tasks;
-
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Cyber_Defense_Game.Views;
 
@@ -26,14 +26,11 @@ public partial class HostView : UserControl
 
     private readonly ListBox _playerList;
     private readonly TextBlock _lobbyCodeText;
-    private readonly Image _qrCodeImage;
-    private readonly Image _displayImage;
+    private readonly Avalonia.Controls.Image _qrCodeImage;
+    private readonly Avalonia.Controls.Image _displayImage;
 
     public HostView()
     {
-        InitializeComponent();
-
-        LoadImage();
         var playBtn = new Button { Content = "Play" };
         playBtn.Click += Play_Click;
 
@@ -89,7 +86,7 @@ public partial class HostView : UserControl
             HorizontalAlignment = HorizontalAlignment.Center
         };
 
-        _qrCodeImage = new Image
+        _qrCodeImage = new Avalonia.Controls.Image
         {
             Width = 180,
             Height = 180,
@@ -147,20 +144,18 @@ public partial class HostView : UserControl
         };
         DockPanel.SetDock(rightCard, Dock.Right);
 
-        _displayImage = new Image { Stretch = Stretch.Uniform };
+        _displayImage = new Avalonia.Controls.Image { Stretch = Stretch.Uniform };
 
         Content = new DockPanel
         {
             Margin = new Thickness(20),
             Children = { topPanel, leftPanel, rightCard, _displayImage }
         };
-
     }
 
     public HostView(MainView main) : this() => _main = main;
 
     private async Task ConnectToServerAsync()
-
     {
         try
         {
@@ -242,98 +237,14 @@ public partial class HostView : UserControl
     }
 
     private void LoadImage()
-
     {
         try
         {
-
-
-            using var stream = AssetLoader.Open(uri);
-            DisplayImage.Source = new Bitmap(stream);
-        }
-    }
-
-    private void Back_Click(object? sender, RoutedEventArgs e) => _main?.ShowMenu();
-}
-
-            await GameConnection.ConnectAsync("https://cyberquiz.tail9822f1.ts.net");
-            await GameConnection.RegisterAsHostAsync();
-            Console.WriteLine("Host registered successfully");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Host SignalR failed: {ex}");
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                PlayerList.ItemsSource = new List<string> { $"Error: {ex.Message}" });
-        }
-    }
-
-    private void OnImageChanged()
-    {
-        Avalonia.Threading.Dispatcher.UIThread.Post(LoadImage);
-    }
-
-    private void OnPlayersUpdated(List<string> players)
-    {
-        var snapshot = players.ToList();
-        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-        {
-            if (!_lobbyOpen)
-                return;
-
-            if (snapshot.Count > _playerCount)
-                BrowserMusic.PlayEffectSafe("player_join");
-            else if (snapshot.Count < _playerCount)
-                BrowserMusic.PlayEffectSafe("player_leave");
-
-            _playerCount = snapshot.Count;
-            PlayerList.ItemsSource = snapshot;
-        });
-    }
-
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        _lobbyOpen = true;
-        var players = GameConnection.CurrentPlayers.ToList();
-        _playerCount = players.Count;
-        PlayerList.ItemsSource = players;
-
-        GameState.ImageChanged -= OnImageChanged;
-        GameState.ImageChanged += OnImageChanged;
-
-        GameConnection.PlayersUpdated -= OnPlayersUpdated;
-        GameConnection.PlayersUpdated += OnPlayersUpdated;
-
-        LoadImage();
-
-        _ = ConnectToServerAsync();
-    }
-
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        _lobbyOpen = false;
-        BrowserMusic.StopSafe();
-        GameState.ImageChanged -= OnImageChanged;
-        GameConnection.PlayersUpdated -= OnPlayersUpdated;
-        GameConnection.IsHost = true;
-        base.OnDetachedFromVisualTree(e);
-    }
-
-    private void LoadImage()
-    {
-        try
-        {
-
             var uri = new Uri(GameState.GetImagePath(GameState.SelectedImage));
             if (AssetLoader.Exists(uri))
             {
                 using var stream = AssetLoader.Open(uri);
-
                 _displayImage.Source = new Bitmap(stream);
-
-                DisplayImage.Source = new Bitmap(stream);
-
             }
         }
         catch (Exception ex)
@@ -341,7 +252,6 @@ public partial class HostView : UserControl
             Console.WriteLine($"LoadImage failed: {ex}");
         }
     }
-
 
     private async void Play_Click(object? sender, RoutedEventArgs e)
     {
@@ -359,4 +269,4 @@ public partial class HostView : UserControl
     {
         _main?.ShowMenu();
     }
-
+}
